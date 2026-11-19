@@ -838,7 +838,9 @@ async function doExport(all){
   msg('打包 '+nImg+' 張圖片中…');
   const blob=await buildZip(entries);
   const g=cur();
-  const zname=all&&groups.length>1?'立繪差分_全部.zip':((g.name.trim()||'立繪差分')+(g.variant.trim()?'_'+g.variant.trim():'')).replace(BAD,'')+'.zip';
+  const nm=[...new Set(gs.map(x=>x.name.trim()).filter(Boolean))];
+  const who=nm.length?(nm.length>1?nm[0]+'等':nm[0]):'立繪差分';
+  const zname=(all&&groups.length>1?who+'_全部版本':who+(g.variant.trim()?'_'+g.variant.trim():'')).replace(BAD,'')+'.zip';
   const ok=await saveBlob(zname,blob);
   if(ok)msg('已送出 '+nImg+' 張圖片的 ZIP（'+zname+'）'+($('#optJson').checked?'，內含設定檔':'')+(empty?'，另有 '+empty+' 個空位沒有圖片，已略過':'')+'。');
 }
