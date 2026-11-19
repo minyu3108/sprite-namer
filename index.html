@@ -166,6 +166,11 @@ textarea{width:100%;min-height:120px;background:var(--bg);border:1px solid var(-
       </div>
     </div>
     <p class="hint">也可以直接把圖片拖進頁面。拖曳卡片上方的條列來改順序，編號會即時變動；點圖片可放大並輸入形容。</p>
+    <div class="row">
+      <label class="check"><input type="checkbox" id="optDesc" checked> 加入圖片時，從檔名偵測形容</label>
+      <label class="check"><input type="checkbox" id="optName" checked> 角色名字是空的時，從檔名偵測名字</label>
+    </div>
+    <p class="hint">偵測會讀「名字 (1)形容」「名字_01_形容」這類檔名，編號後面的文字當作形容。已經有形容的空位不會被覆蓋，之後都能再手動修改。</p>
     <input type="file" id="file" accept="image/*" multiple hidden>
     <div class="grid" id="grid"></div>
     <div class="row">
@@ -343,6 +348,21 @@ async function inflateEntry(e){
     return new Uint8Array(await new Response(new Blob([e.raw]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer());
   }
   throw new Error('這個 ZIP 用了不支援的壓縮方式，請用本工具匯出的 ZIP');
+}
+/* guess name / number / description from a file name, e.g. 艾莉 (1)微笑.png, 艾莉_01_微笑.png */
+function detectName(fn,variant){
+  const st=fn.replace(/\.[A-Za-z0-9]{2,5}$/,'').trim();
+  const trim=x=>x.replace(/^[\s_\-]+|[\s_\-]+$/g,'');
+  let name='',num='',desc='';
+  let m=/^(.*?)[\s_\-]*[\(\[（【](\d{1,4})[\)\]）】][\s_\-]*(.*)$/.exec(st)||/^(\D*?)[\s_\-]*(\d{1,4})(?!\d)[\s_\-]*(.*)$/.exec(st);
+  if(m){name=trim(m[1]);num=m[2];desc=trim(m[3]);}
+  else{
+    const m2=/^(.+?)[\s_\-]+(.+)$/.exec(st);
+    if(m2){name=trim(m2[1]);desc=trim(m2[2]);}else desc=trim(st);
+  }
+  const v=(variant||'').trim();
+  if(v&&desc.startsWith(v))desc=trim(desc.slice(v.length));
+  return {name,num,desc};
 }
 //#PURE-END
 
@@ -583,15 +603,30 @@ function addFiles(list){
   const files=[...list].filter(f=>(f.type||'').startsWith('image/')||/\.(png|jpe?g|webp|gif|bmp|avif)$/i.test(f.name));
   if(!files.length){msg('沒有可用的圖片檔。',true);return;}
   files.sort((a,b)=>natural(a.name,b.name));
-  let filled=0,added=0;
+  let filled=0,added=0,descs=0;const names={};
+  const wantDesc=$('#optDesc').checked,wantName=$('#optName').checked;
   for(const f of files){
     const url=URL.createObjectURL(f),ext=getExt(f);
+    const det=(wantDesc||wantName)?detectName(f.name,g.variant):{name:'',desc:''};
+    if(det.name)names[det.name]=(names[det.name]||0)+1;
     const slot=g.items.find(i=>!i.file);
-    if(slot){slot.file=f;slot.url=url;slot.ext=ext;slot.orig=f.name;filled++;}
-    else{g.items.push({id:nid(),file:f,url,ext,orig:f.name,desc:''});added++;}
+    if(slot){
+      slot.file=f;slot.url=url;slot.ext=ext;slot.orig=f.name;filled++;
+      if(wantDesc&&!slot.desc&&det.desc){slot.desc=det.desc;descs++;}
+    }else{
+      g.items.push({id:nid(),file:f,url,ext,orig:f.name,desc:wantDesc?det.desc:''});added++;
+      if(wantDesc&&det.desc)descs++;
+    }
+  }
+  let nameNote='';
+  if(wantName&&!g.name.trim()){
+    const top=Object.entries(names).sort((a,b)=>b[1]-a[1])[0];
+    if(top){g.name=top[0].slice(0,60);renderSettings();nameNote='，名字偵測為「'+g.name+'」';}
   }
   renderGrid();updateNames();
-  msg('已加入 '+files.length+' 張'+(filled?'，其中 '+filled+' 張填進空位':'')+(added?'，新增 '+added+' 張':'')+'。');
+  const text='已加入 '+files.length+' 張'+(filled?'，其中 '+filled+' 張填進空位':'')+(added?'，新增 '+added+' 張':'')+(descs?'，從檔名取得 '+descs+' 筆形容':'')+nameNote+'。';
+  msg(text);
+  return text;
 }
 el.file.addEventListener('change',()=>{addFiles(el.file.files);el.file.value='';});
 $('#btnPick').addEventListener('click',()=>el.file.click());
@@ -851,7 +886,7 @@ async function importProject(list){
       }else if(isImg(f)){imgs.push({file:f,path:f.name});}
     }
     if(!proj){
-      if(imgs.length){addFiles(imgs.map(o=>o.file));msg('沒有找到設定檔，只加入了 '+imgs.length+' 張圖片。要還原設定，請一起選 sprite-namer.json。',true);}
+      if(imgs.length){const t=addFiles(imgs.map(o=>o.file));msg(t+' 沒有找到設定檔；要還原設定，請一起選 sprite-namer.json。',true);}
       else msg('找不到可以匯入的內容。請選擇本工具匯出的 ZIP 或 sprite-namer.json。',true);
       return;
     }
