@@ -149,6 +149,11 @@ textarea{width:100%;min-height:120px;background:var(--bg);border:1px solid var(-
       <button class="btn" id="btnNewGroup" type="button">＋ 新增空白版本</button>
       <button class="btn warn" id="btnDelGroup" type="button">刪除此版本</button>
     </div>
+    <div class="row">
+      <button class="btn" id="btnImport" type="button">匯入先前的匯出</button>
+      <span class="hint">選擇之前下載的 ZIP 或 sprite-namer.json，版本、名字、格式、順序、形容都會還原，不用重做。</span>
+    </div>
+    <input type="file" id="fileImport" accept=".zip,.json,application/zip,application/json,image/*" multiple hidden>
     <p class="hint">同一個角色可以有好幾個版本，例如「本體」和「戴帽子」，每個版本放自己的一批圖。切換版本請用最上方那一列，往下捲動時它會固定在畫面上，隨時都能切。只有一個版本的話，可以直接跳到第 2 步。<br>要做戴帽子版：按「複製成新版本」，原本每張的形容會留著、圖片位置會清空，在上面的欄位填「帽子」，再把戴帽子的圖放進來就完成了。</p>
   </section>
 
@@ -200,8 +205,10 @@ textarea{width:100%;min-height:120px;background:var(--bg);border:1px solid var(-
     <div class="row">
       <button class="btn primary" id="btnZip" type="button">下載此版本 ZIP</button>
       <button class="btn" id="btnZipAll" type="button">下載全部版本 ZIP</button>
+      <button class="btn" id="btnJson" type="button">只下載設定檔</button>
       <button class="btn" id="btnCopy" type="button">複製新檔名清單</button>
     </div>
+    <label class="check"><input type="checkbox" id="optJson" checked> ZIP 內附設定檔 sprite-namer.json（之後可以重新匯入）</label>
     <label class="check"><input type="checkbox" id="optFolder" checked> 下載全部版本時，每個版本放進各自的資料夾（取消勾選則全部放在同一層，重複檔名會自動加 (2)）</label>
     <div class="notice" id="msg" role="status">ZIP 內是原圖加上新檔名，不會重新壓縮或改畫質。下載全部版本時可選擇要不要按版本分資料夾。</div>
     <details id="listBox"><summary>檔名清單（此版本）</summary><textarea id="listOut" readonly aria-label="新檔名清單"></textarea></details>
@@ -292,6 +299,51 @@ async function buildZip(entries){
   end.setUint32(12,cs,true);end.setUint32(16,offset,true);
   return new Blob([...parts,...central,end.buffer],{type:'application/zip'});
 }
+const TYPES=['name','num','desc','variant','sp','us','dash','text'];
+const MIME={png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',webp:'image/webp',gif:'image/gif',bmp:'image/bmp',avif:'image/avif'};
+const base=p=>p.split('/').pop();
+const clampInt=(v,a,b,d)=>{v=parseInt(v,10);return isNaN(v)?d:Math.max(a,Math.min(b,v));};
+/* validate + sanitize an exported project file; returns array of groups or null */
+function cleanProject(o){
+  if(!o||o.app!=='sprite-namer'||!Array.isArray(o.groups))return null;
+  const S=(v,n)=>String(v==null?'':v).slice(0,n);
+  return o.groups.slice(0,50).filter(g=>g&&typeof g==='object').map(g=>({
+    name:S(g.name,60),variant:S(g.variant,60),
+    start:clampInt(g.start,0,9999,1),digits:clampInt(g.digits,1,4,1),
+    numStyle:['paren','plain','bracket'].includes(g.numStyle)?g.numStyle:'paren',
+    tokens:(Array.isArray(g.tokens)?g.tokens:[]).slice(0,40).filter(t=>t&&TYPES.includes(t.type)).map(t=>({type:t.type,text:S(t.text,40)})),
+    items:(Array.isArray(g.items)?g.items:[]).slice(0,2000).map(i=>({
+      desc:S(i&&i.desc,100),ext:S(i&&i.ext,6).replace(/[^A-Za-z0-9]/g,''),orig:S(i&&i.orig,200),path:S(i&&i.path,300)}))
+  }));
+}
+/* read ZIP central directory; entries keep raw (maybe compressed) bytes */
+async function readZip(file){
+  const buf=new Uint8Array(await file.arrayBuffer());
+  const dv=new DataView(buf.buffer,buf.byteOffset,buf.byteLength);
+  let e=-1;
+  for(let i=buf.length-22;i>=Math.max(0,buf.length-65557);i--){if(dv.getUint32(i,true)===0x06054b50){e=i;break;}}
+  if(e<0)throw new Error('不是有效的 ZIP 檔');
+  const n=dv.getUint16(e+10,true);let off=dv.getUint32(e+16,true);
+  const dec=new TextDecoder('utf-8'),out=[];
+  for(let k=0;k<n;k++){
+    if(dv.getUint32(off,true)!==0x02014b50)throw new Error('ZIP 內容損壞');
+    const method=dv.getUint16(off+10,true),csize=dv.getUint32(off+20,true);
+    const nl=dv.getUint16(off+28,true),xl=dv.getUint16(off+30,true),cl=dv.getUint16(off+32,true),lo=dv.getUint32(off+42,true);
+    const name=dec.decode(buf.subarray(off+46,off+46+nl));
+    off+=46+nl+xl+cl;
+    if(name.endsWith('/'))continue;
+    const ds=lo+30+dv.getUint16(lo+26,true)+dv.getUint16(lo+28,true);
+    out.push({name,method,raw:buf.subarray(ds,ds+csize)});
+  }
+  return out;
+}
+async function inflateEntry(e){
+  if(e.method===0)return e.raw;
+  if(e.method===8&&typeof DecompressionStream!=='undefined'){
+    return new Uint8Array(await new Response(new Blob([e.raw]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer());
+  }
+  throw new Error('這個 ZIP 用了不支援的壓縮方式，請用本工具匯出的 ZIP');
+}
 //#PURE-END
 
 /* ---------- state ---------- */
@@ -313,7 +365,6 @@ function lsGet(){
   }catch(_){lsOk=false;return {};}
 }
 function lsSet(o){try{localStorage.setItem(LS,JSON.stringify(o));}catch(_){lsOk=false;}}
-const TYPES=['name','num','desc','variant','sp','us','dash','text'];
 function fmtOf(g){return {tokens:g.tokens.map(t=>({type:t.type,text:t.text})),numStyle:g.numStyle,digits:g.digits,start:g.start};}
 function applyFmt(g,f){
   if(!f||!Array.isArray(f.tokens))return;
@@ -547,7 +598,7 @@ $('#btnPick').addEventListener('click',()=>el.file.click());
 const hasFiles=e=>e.dataTransfer&&[...e.dataTransfer.types].includes('Files');
 ['dragenter','dragover'].forEach(n=>window.addEventListener(n,e=>{if(hasFiles(e)){e.preventDefault();document.body.classList.add('dropping');}}));
 window.addEventListener('dragleave',e=>{if(!e.relatedTarget)document.body.classList.remove('dropping');});
-window.addEventListener('drop',e=>{if(hasFiles(e)){e.preventDefault();document.body.classList.remove('dropping');addFiles(e.dataTransfer.files);}});
+window.addEventListener('drop',e=>{if(hasFiles(e)){e.preventDefault();document.body.classList.remove('dropping');const fl=[...e.dataTransfer.files];if(fl.some(f=>/\.(zip|json)$/i.test(f.name)))importProject(fl);else addFiles(fl);}});
 
 /* ---------- grid interactions ---------- */
 el.grid.addEventListener('click',e=>{
@@ -718,10 +769,22 @@ async function saveBlob(filename,blob){
     msg('沒有下載成功：'+(err&&err.message?err.message:'已取消')+'。',true);return false;
   }
 }
+function projectBlob(gs,paths){
+  const data={app:'sprite-namer',v:1,groups:gs.map(g=>({
+    name:g.name,variant:g.variant,start:g.start,digits:g.digits,numStyle:g.numStyle,
+    tokens:g.tokens.map(t=>({type:t.type,text:t.text})),
+    items:g.items.map(it=>({desc:it.desc,ext:it.ext||'',orig:it.orig||'',path:paths.get(it.id)||''}))}))};
+  return new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+}
+async function doExportJson(){
+  const ok=await saveBlob('sprite-namer.json',projectBlob(groups,new Map()));
+  if(ok)msg('已送出設定檔（全部 '+groups.length+' 個版本）。匯入時可以同時選這個檔案和圖片。');
+}
+$('#btnJson').addEventListener('click',doExportJson);
 async function doExport(all){
   const gs=all?groups:[cur()];
   const folder=all&&groups.length>1&&$('#optFolder').checked;
-  const entries=[];let empty=0;const dirUsed=new Set(),flatUsed=new Set();
+  const entries=[];let empty=0;const dirUsed=new Set(),flatUsed=new Set(),paths=new Map();
   for(const g of gs){
     const used=folder?new Set():flatUsed;
     let dir='';
@@ -730,16 +793,19 @@ async function doExport(all){
     }
     g.items.forEach((it,i)=>{
       if(!it.file){empty++;return;}
-      entries.push({path:dir+uniq(fileName(g,i,it),used),blob:it.file});
+      const path=dir+uniq(fileName(g,i,it),used);paths.set(it.id,path);
+      entries.push({path,blob:it.file});
     });
   }
   if(!entries.length){msg('還沒有圖片可以匯出。',true);return;}
-  msg('打包 '+entries.length+' 張圖片中…');
+  const nImg=entries.length;
+  if($('#optJson').checked)entries.unshift({path:'sprite-namer.json',blob:projectBlob(gs,paths)});
+  msg('打包 '+nImg+' 張圖片中…');
   const blob=await buildZip(entries);
   const g=cur();
   const zname=all&&groups.length>1?'立繪差分_全部.zip':((g.name.trim()||'立繪差分')+(g.variant.trim()?'_'+g.variant.trim():'')).replace(BAD,'')+'.zip';
   const ok=await saveBlob(zname,blob);
-  if(ok)msg('已送出 '+entries.length+' 張圖片的 ZIP（'+zname+'）'+(empty?'，另有 '+empty+' 個空位沒有圖片，已略過':'')+'。');
+  if(ok)msg('已送出 '+nImg+' 張圖片的 ZIP（'+zname+'）'+($('#optJson').checked?'，內含設定檔':'')+(empty?'，另有 '+empty+' 個空位沒有圖片，已略過':'')+'。');
 }
 $('#btnZip').addEventListener('click',()=>doExport(false));
 $('#btnZipAll').addEventListener('click',()=>doExport(true));
@@ -749,6 +815,75 @@ $('#btnCopy').addEventListener('click',async()=>{
   try{await navigator.clipboard.writeText(text);msg('已複製 '+text.split('\n').length+' 個新檔名。');}
   catch(_){el.listBox.open=true;el.listOut.focus();el.listOut.select();msg('無法直接複製，已把清單選取起來，請手動複製。',true);}
 });
+
+/* ---------- import ---------- */
+const isImg=f=>(f.type||'').startsWith('image/')||/\.(png|jpe?g|webp|gif|bmp|avif)$/i.test(f.name);
+function makeGroupFrom(c,resolve){
+  const g={id:nid(),name:c.name,variant:c.variant,start:c.start,digits:c.digits,numStyle:c.numStyle,
+    tokens:c.tokens.length?c.tokens.map(t=>({id:nid(),type:t.type,text:t.text})):defaultTokens(),items:[]};
+  for(const i of c.items){
+    const f=resolve(i);
+    g.items.push(f?{id:nid(),file:f,url:URL.createObjectURL(f),ext:getExt(f),orig:i.orig||f.name,desc:i.desc}
+                  :{id:nid(),file:null,url:null,ext:'',orig:'',desc:i.desc});
+  }
+  return g;
+}
+async function importProject(list){
+  const files=[...list];
+  msg('讀取中…');
+  try{
+    let proj=null;const imgs=[];
+    for(const f of files){
+      const low=f.name.toLowerCase();
+      if(low.endsWith('.zip')){
+        for(const e of await readZip(f)){
+          const bn=base(e.name);
+          if(e.name.startsWith('__MACOSX/')||bn.startsWith('._'))continue;
+          const x=((/\.([A-Za-z0-9]+)$/.exec(bn)||[])[1]||'').toLowerCase();
+          if(x==='json'){
+            if(!proj){try{const c=cleanProject(JSON.parse(new TextDecoder().decode(await inflateEntry(e))));if(c)proj=c;}catch(_){}}
+          }else if(MIME[x]){
+            imgs.push({file:new File([await inflateEntry(e)],bn,{type:MIME[x]}),path:e.name});
+          }
+        }
+      }else if(low.endsWith('.json')){
+        if(!proj){try{const c=cleanProject(JSON.parse(await f.text()));if(c)proj=c;}catch(_){}}
+      }else if(isImg(f)){imgs.push({file:f,path:f.name});}
+    }
+    if(!proj){
+      if(imgs.length){addFiles(imgs.map(o=>o.file));msg('沒有找到設定檔，只加入了 '+imgs.length+' 張圖片。要還原設定，請一起選 sprite-namer.json。',true);}
+      else msg('找不到可以匯入的內容。請選擇本工具匯出的 ZIP 或 sprite-namer.json。',true);
+      return;
+    }
+    if(!proj.length){msg('設定檔裡沒有任何版本。',true);return;}
+    const byPath=new Map(),byName=new Map(),used=new Set();
+    imgs.forEach(o=>{byPath.set(o.path,o);const k=base(o.path).toLowerCase();if(!byName.has(k))byName.set(k,o);});
+    const resolve=i=>{
+      if(!i.path)return null;
+      let o=byPath.get(i.path);
+      if(!o||used.has(o))o=byName.get(base(i.path).toLowerCase());
+      if(!o||used.has(o))return null;
+      used.add(o);return o.file;
+    };
+    const fresh=proj.map(c=>makeGroupFrom(c,resolve));
+    /* images that matched no saved path fill the first version's empty slots in filename order */
+    const left=imgs.filter(o=>!used.has(o)).sort((a,b)=>natural(a.file.name,b.file.name));
+    for(const o of left){
+      const slot=fresh[0].items.find(i=>!i.file);if(!slot)break;
+      slot.file=o.file;slot.url=URL.createObjectURL(o.file);slot.ext=getExt(o.file);slot.orig=o.file.name;used.add(o);
+    }
+    const onlyBlank=groups.length===1&&!groups[0].items.length&&!groups[0].name.trim()&&!groups[0].variant.trim();
+    if(onlyBlank)groups.splice(0,1);
+    groups.push(...fresh);curId=fresh[0].id;
+    renderAll();
+    const placed=fresh.reduce((n,g)=>n+g.items.filter(i=>i.file).length,0);
+    const slots=fresh.reduce((n,g)=>n+g.items.filter(i=>!i.file).length,0);
+    const extra=imgs.length-used.size;
+    msg('已匯入 '+fresh.length+' 個版本、'+placed+' 張圖片'+(slots?'，還有 '+slots+' 個空位等你放圖':'')+(extra?'，'+extra+' 張圖片沒有對應的位置而略過':'')+'。',!!extra);
+  }catch(err){msg('匯入失敗：'+(err&&err.message?err.message:'未知錯誤'),true);}
+}
+$('#btnImport').addEventListener('click',()=>$('#fileImport').click());
+$('#fileImport').addEventListener('change',e=>{const l=[...e.target.files];e.target.value='';if(l.length)importProject(l);});
 
 /* external link: inside the viewer frame a plain link is opened outside by the viewer; standalone, open a new tab so work is not lost */
 try{if(window.top===window.self)$('#extLink').target='_blank';}catch(_){}
