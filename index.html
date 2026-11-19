@@ -61,6 +61,8 @@ input[type=text],input[type=number],select{background:var(--bg);border:1px solid
 .check{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
 
 /* tabs */
+.foot{text-align:center;color:var(--muted);font-size:13px;padding-top:8px;word-break:break-all}
+.foot a{color:var(--accent)}
 .vbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:10px;margin:0 -16px;padding:8px 16px;background:var(--bg);border-bottom:1px solid var(--line)}
 .vlabel{font-weight:700;font-size:13px;color:var(--muted);flex:0 0 auto}
 .tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;flex:1 1 0;min-width:0}
@@ -204,6 +206,10 @@ textarea{width:100%;min-height:120px;background:var(--bg);border:1px solid var(-
     <div class="notice" id="msg" role="status">ZIP 內是原圖加上新檔名，不會重新壓縮或改畫質。下載全部版本時可選擇要不要按版本分資料夾。</div>
     <details id="listBox"><summary>檔名清單（此版本）</summary><textarea id="listOut" readonly aria-label="新檔名清單"></textarea></details>
   </section>
+
+  <footer class="foot">
+    相關工具：<a id="extLink" href="https://756y.github.io/ccfolia_character_json_tool/" rel="noopener noreferrer">CCFOLIA Character JSON 產生器</a>
+  </footer>
 </div>
 
 <div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="mPos">
@@ -743,6 +749,9 @@ $('#btnCopy').addEventListener('click',async()=>{
   try{await navigator.clipboard.writeText(text);msg('已複製 '+text.split('\n').length+' 個新檔名。');}
   catch(_){el.listBox.open=true;el.listOut.focus();el.listOut.select();msg('無法直接複製，已把清單選取起來，請手動複製。',true);}
 });
+
+/* external link: inside the viewer frame a plain link is opened outside by the viewer; standalone, open a new tab so work is not lost */
+try{if(window.top===window.self)$('#extLink').target='_blank';}catch(_){}
 
 /* ---------- init ---------- */
 renderPalette();renderAll();
