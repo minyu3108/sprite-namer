@@ -97,9 +97,7 @@ input[type=text],input[type=number],select{background:var(--bg);border:1px solid
 .thumb img{max-width:100%;max-height:100%;object-fit:contain;display:block;-webkit-user-drag:none}
 .thumb.slot{background:transparent;border-bottom:0;color:var(--muted);font-size:13px;cursor:pointer;border:1px dashed var(--line);margin:8px;width:auto;border-radius:8px;flex:1;min-height:110px}
 .thumb.slot:hover{border-color:var(--accent);color:var(--accent)}
-.cname{font-family:var(--mono);font-size:12px;padding:6px 10px 0;word-break:break-all;cursor:pointer}
-.cdesc{font-size:13px;padding:2px 10px 8px;color:var(--ink);cursor:pointer;min-height:22px}
-.cdesc.ph{color:var(--muted)}
+.cname{font-family:var(--mono);font-size:12px;padding:6px 10px 8px;word-break:break-all;cursor:pointer}
 .card.dup .cname{color:var(--warn)}
 .addtile{border:1px dashed var(--line);background:transparent;border-radius:10px;min-height:120px;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;text-align:center;padding:12px}
 .addtile:hover{border-color:var(--accent);color:var(--accent)}
@@ -473,7 +471,7 @@ function renderGrid(){
       '<button class="x" type="button" data-nodrag="1" aria-label="移除這張">×</button></div>'+
       (it.file?'<button class="thumb" type="button" aria-label="放大並輸入形容"><img alt="" draggable="false"></button>'
               :'<button class="thumb slot" type="button">＋ 放入圖片</button>')+
-      '<div class="cname"></div><div class="cdesc"></div>';
+      '<div class="cname"></div>';
     if(it.file)c.querySelector('img').src=it.url;
     el.grid.appendChild(c);
   }
@@ -494,8 +492,6 @@ function updateNames(order){
     const it=map.get(id);
     c.querySelector('.num').textContent=pad(g.start+i,g.digits);
     c.querySelector('.cname').textContent=names[i];
-    const d=c.querySelector('.cdesc');
-    d.textContent=it.desc||'點擊輸入形容';d.classList.toggle('ph',!it.desc);
     const isDup=cnt[names[i].toLowerCase()]>1;
     c.classList.toggle('dup',isDup);if(isDup)dups++;
   });
@@ -643,7 +639,7 @@ el.grid.addEventListener('click',e=>{
   const g=cur(),idx=g.items.findIndex(i=>i.id===c.dataset.id);if(idx<0)return;
   if(e.target.closest('.x')){g.items.splice(idx,1);renderGrid();updateNames();return;}
   if(e.target.closest('.slot')){el.file.click();return;}
-  if(e.target.closest('.thumb,.cdesc,.cname'))openModal(idx);
+  if(e.target.closest('.thumb,.cname'))openModal(idx);
 });
 
 /* ---------- modal ---------- */
