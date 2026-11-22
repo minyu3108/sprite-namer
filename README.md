@@ -17,4 +17,6 @@ Settings → Pages → Branch 選 `main`、資料夾選 `/ (root)`。
 格式與「我的格式」存在瀏覽器的 localStorage，換瀏覽器或裝置不會跟著走。
 
 
-## iocn圖片credit：李曉夜
+## iocn圖片credit
+
+李曉夜
