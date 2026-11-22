@@ -35,7 +35,7 @@
 *{box-sizing:border-box}
 html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.55;-webkit-text-size-adjust:100%}
-.wrap{max-width:980px;margin:0 auto;padding:20px 16px 56px;display:flex;flex-direction:column;gap:16px}
+.wrap{max-width:980px;margin:0 auto;padding:20px 16px 84px;display:flex;flex-direction:column;gap:16px}
 h1{font-size:22px;margin:0;letter-spacing:.02em;text-wrap:balance}
 h2{font-size:15px;margin:0;font-weight:700}
 .sub{color:var(--muted);margin:4px 0 0;font-size:14px}
@@ -104,13 +104,32 @@ input[type=text],input[type=number],select{background:var(--bg);border:1px solid
 .cgtop select{width:auto;min-height:38px}
 .xbtn{border:0;background:transparent;cursor:pointer;width:30px;height:30px;border-radius:6px;color:var(--muted);font-size:16px;flex:0 0 auto}
 .xbtn:hover{background:var(--line);color:var(--ink)}
-.clayers{display:flex;flex-direction:column;gap:4px}
+.clayers{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:4px}
+.clnone{grid-column:1/-1}
+.clrow .clname{min-width:0;flex:1 1 0;width:auto}
+.cgfold{min-width:32px}
+.cgroup.collapsed .clayers,.cgroup.collapsed .cgadd{display:none}
+section.panel,.cgroup{scroll-margin-top:64px}
+.dock{position:fixed;left:50%;transform:translateX(-50%);bottom:12px;z-index:60;width:min(960px,calc(100% - 24px));background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:0 8px 28px rgba(0,0,0,.16)}
+.dockin{display:flex;gap:4px;align-items:center;padding:6px 8px}
+.dockin .btn{white-space:nowrap;min-height:36px;padding:6px 12px;border-radius:10px}
+.dockin .btn:not(.primary){border-color:transparent;background:transparent;color:var(--muted)}
+.dockin .btn:not(.primary):hover{background:var(--bg);color:var(--ink)}
+.dockin .btn.add{color:var(--accent);font-weight:500}
+.dockin .dsep{width:1px;height:20px;background:var(--line);margin:0 4px;flex:none}
+.dockin .dtxt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;color:var(--muted);padding:0 6px}
+.dockmenu{position:fixed;left:50%;transform:translateX(-50%);bottom:68px;z-index:61;width:min(560px,calc(100% - 24px));background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.18);padding:10px;display:flex;flex-wrap:wrap;gap:6px}
+.dockmenu[hidden]{display:none}
+.dockmenu .btn{min-height:36px}
+.dockmenu .dsep{flex-basis:100%;height:0;border-top:1px solid var(--line);margin:2px 0}
+@media(max-width:600px){.dockin .jump{display:none}}
 .clrow,.clnone{display:flex;align-items:center;gap:8px;padding:4px 6px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
 .clnone{color:var(--muted);cursor:pointer}
 .clth{width:40px;height:40px;object-fit:contain;border-radius:4px;background:repeating-conic-gradient(var(--line) 0 25%,transparent 0 50%) 0 0/10px 10px;flex:0 0 auto}
 .clname{flex:1 1 0;min-width:0}
 .clsel{width:20px;height:20px;flex:0 0 auto}
 .clwarn{color:var(--warn);cursor:help}
+.howto{border:1px solid var(--line);border-radius:10px;padding:0 12px}.howto summary{cursor:pointer;padding:8px 0;font-weight:600}.howto .hint{margin:0 0 10px}
 .faq h2{margin:0 0 6px}.faq h3{margin:14px 0 6px;font-size:14px;color:var(--muted)}
 .faq details{border:1px solid var(--line,#d9dde5);border-radius:10px;margin:6px 0;padding:0 12px;background:var(--panel,transparent)}
 .faq summary{cursor:pointer;padding:10px 0;font-weight:600;line-height:1.5}
@@ -184,6 +203,20 @@ textarea{width:100%;min-height:120px;background:var(--bg);border:1px solid var(-
 .mnav{display:flex;gap:8px}
 .mnav .btn{flex:1}
 @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+
+/* calmer layout: more air between blocks, lighter borders (same information) */
+.wrap,.view{gap:24px}
+.compgrid{gap:24px}
+.panel{padding:20px 22px;gap:16px;border-color:color-mix(in srgb,var(--line) 55%,transparent);box-shadow:0 1px 3px rgba(16,24,40,.05)}
+.compleft{gap:20px}.cgroups{gap:16px}
+.cgroup{padding:16px;gap:12px;border-radius:14px;border-color:color-mix(in srgb,var(--line) 70%,transparent)}
+.clayers{gap:8px}
+.clrow,.clnone{border-color:transparent;padding:6px 8px}
+.row{gap:10px}
+.hint{line-height:1.7}
+.cgsum{margin:0 2px;line-height:1.6}
+.notice{padding:10px 12px}
+.comppv{border-color:color-mix(in srgb,var(--line) 55%,transparent)}
 </style>
 </head>
 <body>
@@ -309,25 +342,21 @@ textarea{width:100%;min-height:120px;background:var(--bg);border:1px solid var(-
         <label class="f" for="cmpName">角色名字（送到命名時使用，可留空）<input type="text" id="cmpName" autocomplete="off" placeholder="例如：艾莉"></label>
       </div>
       <div class="row">
-        <span class="hint">快速新增：</span>
-        <button class="btn" id="cmpAddBody" type="button">＋ 身體</button>
-        <button class="btn" id="cmpAddCloth" type="button">＋ 衣服</button>
-        <button class="btn" id="cmpAddEye" type="button">＋ 眼睛</button>
-        <button class="btn" id="cmpAddBrow" type="button">＋ 眉毛</button>
-        <button class="btn" id="cmpAddMouth" type="button">＋ 嘴</button>
-        <button class="btn" id="cmpAddFace" type="button">＋ 表情（整張）</button>
-        <button class="btn" id="cmpAddAcc" type="button">＋ 配件（多選）</button>
-        <button class="btn" id="cmpAddBlank" type="button">＋ 空白</button>
-        <button class="btn primary" id="cmpAddPsd" type="button">匯入 PSD</button>
+        <button class="btn primary" id="cmpToggleAdd" type="button" aria-expanded="false">＋ 新增圖層組</button>
+        <button class="btn" id="cmpAddPsd" type="button">匯入 PSD</button>
         <button class="btn" id="cmpSample" type="button">載入範例</button>
       </div>
+      <div class="row" id="quickRow" hidden><button class="btn" id="cmpAddBody" type="button">＋ 身體</button><button class="btn" id="cmpAddCloth" type="button">＋ 衣服</button><button class="btn" id="cmpAddEye" type="button">＋ 眼睛</button><button class="btn" id="cmpAddBrow" type="button">＋ 眉毛</button><button class="btn" id="cmpAddMouth" type="button">＋ 嘴</button><button class="btn" id="cmpAddFace" type="button">＋ 表情（整張）</button><button class="btn" id="cmpAddAcc" type="button">＋ 配件（多選）</button><button class="btn" id="cmpAddBlank" type="button">＋ 空白</button></div>
+
       <p class="hint"><strong>第一次用？</strong>按「載入範例」，會放入幾張畫好的簡單圖層，直接按「合成並送到命名」就能看到結果。</p>
+      <details class="howto"><summary>使用說明（流程與「用法」怎麼選）</summary>
       <p class="hint"><strong>流程：</strong>① 新增圖層組並放入 PNG，或直接「匯入 PSD」（PSD 的資料夾會變成圖層組，隱藏的圖層不會預先勾選）。② 每個圖層組選一種用法（見下）。③ 輸出。列表越上面越在上層，可拖曳 ⠿ 調整。</p>
       <p class="hint"><strong>每個圖層組的「用法」：</strong><br>
         • <b>每張都一樣</b>：每張輸出都用你目前勾的那一個（例：身體、底色）。<br>
         • <b>分成版本</b>：每個選項各成一個「版本」＝命名分頁裡的一個分頁（例：衣服有制服、便服 → 2 個版本）。<br>
         • <b>分成差分</b>：在每個版本裡，每個選項各輸出一張圖（例：表情有笑、怒、驚 → 每版 3 張）。<br>
         結果張數 ＝ 版本數 × 差分數。每個圖層組下面會即時寫出它會產生什麼。</p>
+    </details>
     </section>
     <div class="compgrid">
       <aside class="comppv" aria-label="預覽">
@@ -336,7 +365,7 @@ textarea{width:100%;min-height:120px;background:var(--bg);border:1px solid var(-
         <div class="hint" id="cmpPvInfo"></div>
       </aside>
       <div class="compleft">
-        <p class="hint" style="margin:0 0 6px">💡 圖層名稱會變成檔名裡的形容（差分）或版本名稱。這裡不用一次取好，送到「命名」分頁後，也可以再修改差分名稱和形容。</p>
+        <div class="row" style="margin:0 0 6px;flex-wrap:nowrap"><span class="hint" style="flex:1">💡 圖層名稱會變成檔名裡的形容（差分）或版本名稱。這裡不用一次取好，送到「命名」分頁後，也可以再修改差分名稱和形容。</span><button class="btn" id="cmpFoldAll" type="button" style="white-space:nowrap">全部折疊／展開</button></div>
         <div class="cgroups" id="cmpGroups"></div>
         <section class="panel" aria-label="組合清單">
           <h2>組合清單</h2>
@@ -1312,7 +1341,37 @@ function setView(v){
   $('#viewNamer').hidden=v!=='namer';$('#viewComp').hidden=v!=='comp';
   $('#tabNamer').classList.toggle('on',v==='namer');$('#tabComp').classList.toggle('on',v==='comp');
   $('#tabNamer').setAttribute('aria-selected',v==='namer');$('#tabComp').setAttribute('aria-selected',v==='comp');
-  window.scrollTo(0,0);
+  window.scrollTo(0,0);updateDock();
+}
+
+/* bottom dock: jump links + the main action of the current tab, so long pages need less scrolling */
+const dock=document.createElement('div');dock.className='dock';dock.innerHTML='<div class="dockin"></div>';document.body.appendChild(dock);
+let dockTxt=null,dockRun=null;
+const dockMenu=document.createElement('div');dockMenu.className='dockmenu';dockMenu.hidden=true;document.body.appendChild(dockMenu);
+[['＋ 身體','cmpAddBody'],['＋ 衣服','cmpAddCloth'],['＋ 眼睛','cmpAddEye'],['＋ 眉毛','cmpAddBrow'],['＋ 嘴','cmpAddMouth'],['＋ 表情（整張）','cmpAddFace'],['＋ 配件（多選）','cmpAddAcc'],['＋ 空白','cmpAddBlank'],['|'],['匯入 PSD','cmpAddPsd'],['載入範例','cmpSample']].forEach(([t,id])=>{
+  if(t==='|'){const d=document.createElement('div');d.className='dsep';dockMenu.appendChild(d);return;}
+  const b=document.createElement('button');b.type='button';b.className='btn';b.textContent=t;
+  b.addEventListener('click',()=>{dockMenu.hidden=true;document.getElementById(id).click();});dockMenu.appendChild(b);
+});
+document.addEventListener('pointerdown',e=>{if(!dockMenu.hidden&&!dockMenu.contains(e.target)&&!e.target.closest('.dock'))dockMenu.hidden=true;});
+function jumpTo(sel){const el=document.querySelector(sel);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
+function syncDock(){
+  if(dockTxt&&cmp.plan)dockTxt.textContent=cmp.plan.textContent;
+  if(dockRun)dockRun.disabled=cmp.run.disabled;
+}
+function updateDock(){
+  const box=dock.firstChild;box.innerHTML='';dockTxt=dockRun=null;dockMenu.hidden=true;
+  const btn=(t,fn,cls)=>{const b=document.createElement('button');b.type='button';b.className='btn'+(cls?' '+cls:'');b.textContent=t;b.addEventListener('click',fn);box.appendChild(b);return b;};
+  const sp=()=>{const d=document.createElement('span');d.className='dtxt';box.appendChild(d);return d;};
+  if(activeView==='namer'){
+    [['1 角色','角色與版本'],['2 圖片','圖片'],['3 格式','檔名格式'],['4 下載','匯出']].forEach(([t,a])=>btn(t,()=>jumpTo('#viewNamer section[aria-label="'+a+'"]'),'jump'));
+    sp();btn('下載此版本 ZIP',()=>$('#btnZip').click(),'primary');
+  }else{
+    btn('＋ 新增',()=>{dockMenu.hidden=!dockMenu.hidden;},'add');
+    const d0=document.createElement('span');d0.className='dsep jump';box.appendChild(d0);
+    [['圖層組','#cmpGroups'],['組合清單','#viewComp section[aria-label="組合清單"]'],['輸出','#viewComp section[aria-label="輸出"]']].forEach(([t,q])=>btn(t,()=>jumpTo(q),'jump'));
+    dockTxt=sp();dockRun=btn('合成並送到命名',()=>cmp.run.click(),'primary');syncDock();
+  }
 }
 $('#tabNamer').addEventListener('click',()=>setView('namer'));
 $('#tabComp').addEventListener('click',()=>{setView('comp');drawPv();});
@@ -1325,7 +1384,9 @@ let cmpTarget=null,cmpBusy=false,cmpStop=false;
 function cmpMsg(t,warn){cmp.msg.textContent=t;cmp.msg.className='notice'+(warn?' warn':'');}
 function addCmpGroup(name,mode,role){
   const g={id:nid(),name,mode,role,sel:null,layers:[]};
-  comp.groups.unshift(g);renderComp();return g;
+  comp.groups.unshift(g);renderComp();
+  requestAnimationFrame(()=>{const el=document.querySelector('#cmpGroups .cgroup[data-id="'+g.id+'"]');if(el)el.scrollIntoView({behavior:'smooth',block:'nearest'});});
+  return g;
 }
 $('#cmpAddBody').addEventListener('click',()=>addCmpGroup('身體','single','fixed'));
 $('#cmpAddFace').addEventListener('click',()=>addCmpGroup('表情','single','item'));
@@ -1351,14 +1412,15 @@ function cmpDims(){for(const g of comp.groups)for(const l of g.layers)return {w:
 function groupEl(g){
   const el=document.createElement('div');
   el.className='cgroup';el.dataset.id=g.id;
-  el.innerHTML='<div class="cgtop"><span class="grip" aria-hidden="true">⠿</span>'+
+  el.innerHTML='<div class="cgtop"><span class="grip" aria-hidden="true">⠿</span><button class="xbtn cgfold" type="button" aria-label="折疊或展開這個圖層組"></button>'+
     '<input type="text" class="cgname" aria-label="圖層組名稱" placeholder="圖層組名稱，例如：表情" autocomplete="off">'+
     '<select class="cgmode" aria-label="選擇方式"><option value="single">單選</option><option value="multi">多選</option></select>'+
     '<select class="cgrole" aria-label="用法"><option value="fixed">每張都一樣</option><option value="version">分成版本</option><option value="item">分成差分</option></select>'+
     '<button class="xbtn gx" type="button" aria-label="刪除這個圖層組">×</button></div>'+
     '<div class="cgsum" aria-live="polite"></div><div class="clayers"></div>'+
-    '<div class="row"><button class="btn cadd" type="button">＋ 加入圖層（PNG）</button><span class="hint">也可以把 PNG 拖進這個框</span></div>';
+    '<div class="row cgadd"><button class="btn cadd" type="button">＋ 加入圖層（PNG）</button><span class="hint">也可以把 PNG 拖進這個框</span></div>';
   el.querySelector('.cgname').value=g.name;
+  el.classList.toggle('collapsed',!!g.collapsed);el.querySelector('.cgfold').textContent=g.collapsed?'▸':'▾';
   el.querySelector('.cgmode').value=g.mode;
   el.querySelector('.cgrole').value=g.role;
   const lc=el.querySelector('.clayers'),d=cmpDims();
@@ -1410,12 +1472,14 @@ cmp.groups.addEventListener('pointerdown',e=>{
     const under=document.elementFromPoint(lx,ly),ge=under&&under.closest?under.closest('#cmpGroups .cgroup'):null;
     if(hot&&hot!==ge)hot.classList.remove('droptarget');
     hot=ge;if(!ge)return;
+    if(ge.classList.contains('collapsed')){ge.classList.remove('collapsed');const gg=comp.groups.find(x=>x.id===ge.dataset.id);if(gg)gg.collapsed=false;const fb=ge.querySelector('.cgfold');if(fb)fb.textContent='▾';}
     if(ge!==srcEl)ge.classList.add('droptarget');else ge.classList.remove('droptarget');
     const lc=ge.querySelector('.clayers'),sibs=[...lc.querySelectorAll('.clrow')].filter(r=>r!==item);
     if(!sibs.length){if(item.parentNode!==lc)lc.appendChild(item);return;}
-    let best=null,bd=Infinity,bcy=0;
-    for(const r of sibs){const b=r.getBoundingClientRect(),cy=b.top+b.height/2,d=Math.abs(ly-cy);if(d<bd){bd=d;best=r;bcy=cy;}}
-    if(ly<bcy){if(best.previousElementSibling!==item)lc.insertBefore(item,best);}
+    let best=null,bd=Infinity,br=null;
+    for(const r of sibs){const b=r.getBoundingClientRect(),d=Math.hypot(lx-(b.left+b.width/2),ly-(b.top+b.height/2));if(d<bd){bd=d;best=r;br=b;}}
+    const before=ly<br.top||(ly<=br.bottom&&lx<br.left+br.width/2);
+    if(before){if(best.previousElementSibling!==item)lc.insertBefore(item,best);}
     else{if(best.nextElementSibling!==item)lc.insertBefore(item,best.nextSibling);}
   };
   const begin=()=>{
@@ -1462,6 +1526,12 @@ function commitLayerOrder(movedId){
   renderComp();
 }
 
+$('#cmpToggleAdd').addEventListener('click',()=>{const q=$('#quickRow');q.hidden=!q.hidden;$('#cmpToggleAdd').setAttribute('aria-expanded',String(!q.hidden));});
+$('#quickRow').addEventListener('click',e=>{if(e.target.closest('button')){$('#quickRow').hidden=true;$('#cmpToggleAdd').setAttribute('aria-expanded','false');}});
+$('#cmpFoldAll').addEventListener('click',()=>{
+  const fold=comp.groups.some(g=>!g.collapsed);
+  comp.groups.forEach(g=>{g.collapsed=fold;});renderComp();
+});
 function findLayer(id){for(const g of comp.groups){const l=g.layers.find(x=>x.id===id);if(l)return {g,l};}return null;}
 cmp.groups.addEventListener('input',e=>{
   const row=e.target.closest('.clrow'),grp=e.target.closest('.cgroup');if(!grp)return;
@@ -1488,7 +1558,8 @@ cmp.groups.addEventListener('click',e=>{
   if(dragged)return;
   const grp=e.target.closest('.cgroup');if(!grp)return;
   const g=comp.groups.find(x=>x.id===grp.dataset.id);if(!g)return;
-  if(e.target.closest('.gx')){comp.groups=comp.groups.filter(x=>x!==g);renderComp();}
+  if(e.target.closest('.cgfold')){g.collapsed=!g.collapsed;grp.classList.toggle('collapsed',!!g.collapsed);e.target.closest('.cgfold').textContent=g.collapsed?'▸':'▾';}
+  else if(e.target.closest('.gx')){comp.groups=comp.groups.filter(x=>x!==g);renderComp();}
   else if(e.target.closest('.lx')){
     const row=e.target.closest('.clrow');g.layers=g.layers.filter(l=>l.id!==row.dataset.id);
     if(g.sel&&!g.layers.some(l=>l.id===g.sel))g.sel=null;renderComp();
@@ -1846,7 +1917,7 @@ function renderPlan(){
     if(off)txt+=' ⚠ 有 '+off+' 個圖層尺寸和第一張不同。';
   }
   el.textContent=txt;el.className='notice'+(bad?' warn':'');
-  cmp.run.disabled=bad||cmpBusy;
+  cmp.run.disabled=bad||cmpBusy;syncDock();
 }
 document.querySelectorAll('input[name=cmpItemMode]').forEach(r=>r.addEventListener('change',e=>{comp.itemMode=e.target.value;renderPlan();}));
 
@@ -1990,7 +2061,7 @@ cmp.stop.addEventListener('click',()=>{cmpStop=true;cmpMsg('停止中…');});
 try{if(window.top===window.self)$('#extLink').target='_blank';}catch(_){}
 
 /* ---------- init ---------- */
-renderPalette();renderAll();renderComp();renderCombos();
+renderPalette();renderAll();renderComp();renderCombos();updateDock();
 </script>
 </body>
 </html>
