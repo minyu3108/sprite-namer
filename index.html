@@ -64,6 +64,20 @@ input[type=text],input[type=number],select{background:var(--bg);border:1px solid
 /* tabs */
 .foot{text-align:center;color:var(--muted);font-size:13px;padding-top:8px;word-break:break-all}
 .foot a{color:var(--accent)}
+[hidden]{display:none!important}
+.croppanel{display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--line);padding-top:12px}
+.croppanel .row.ctl{align-items:flex-end}
+.croppanel .row.ctl .f{min-width:150px}
+.cstrip{display:flex;gap:8px;overflow-x:auto;padding:2px 0}
+.cstrip canvas{height:96px;border-radius:6px;border:1px solid var(--line);flex:0 0 auto;background:repeating-conic-gradient(var(--line) 0 25%,transparent 0 50%) 0 0/12px 12px}
+.cbox2{width:min(700px,100%)}
+.cwrap{display:flex;justify-content:center;background:repeating-conic-gradient(var(--line) 0 25%,transparent 0 50%) 0 0/16px 16px;border-radius:10px}
+.cstage{position:relative;display:inline-block;line-height:0;overflow:hidden;touch-action:none;cursor:crosshair;max-width:100%;user-select:none;-webkit-user-select:none}
+.cstage img{max-width:100%;max-height:50vh;display:block;-webkit-user-drag:none;pointer-events:none}
+.cb{position:absolute;border:2px solid #fff;outline:1px solid rgba(0,0,0,.55);box-shadow:0 0 0 9999px rgba(0,0,0,.5);cursor:move}
+.cb .h{position:absolute;width:18px;height:18px;background:#fff;border:2px solid var(--accent);border-radius:5px;touch-action:none}
+.h[data-h=tl]{left:0;top:0;cursor:nwse-resize}.h[data-h=tr]{right:0;top:0;cursor:nesw-resize}
+.h[data-h=bl]{left:0;bottom:0;cursor:nesw-resize}.h[data-h=br]{right:0;bottom:0;cursor:nwse-resize}
 .vbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:10px;margin:0 -16px;padding:8px 16px;background:var(--bg);border-bottom:1px solid var(--line)}
 .vlabel{font-weight:700;font-size:13px;color:var(--muted);flex:0 0 auto}
 .tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;flex:1 1 0;min-width:0}
@@ -177,6 +191,20 @@ textarea{width:100%;min-height:120px;background:var(--bg);border:1px solid var(-
       <button class="btn" id="btnRev" type="button">反轉順序</button>
       <button class="btn warn" id="btnClear" type="button">清空圖片</button>
     </div>
+    <div class="croppanel">
+      <div class="row" style="justify-content:space-between">
+        <strong>統一裁切（選填）</strong>
+        <label class="check"><input type="checkbox" id="cropOn"> 輸出時只取一塊範圍</label>
+      </div>
+      <p class="hint">放入全身立繪時很好用：只框選一次臉部（或任何位置），這個版本的所有圖片都會用同樣的位置與比例裁出來。</p>
+      <div class="row ctl" id="cropCtl" hidden>
+        <button class="btn primary" id="btnCropEdit" type="button">設定裁切範圍</button>
+        <label class="f" for="cropMode">輸出方式<select id="cropMode"><option value="crop">只輸出裁切後的圖</option><option value="both">原圖＋裁切圖（裁切圖放在 crop 資料夾）</option></select></label>
+        <label class="f" for="cropOutW">輸出寬度 px（空白＝裁切原尺寸）<input type="number" id="cropOutW" min="16" max="4096" inputmode="numeric" placeholder="例如 256"></label>
+      </div>
+      <div class="cstrip" id="cropStrip" aria-label="裁切預覽"></div>
+      <p class="hint" id="cropInfo"></p>
+    </div>
   </section>
 
   <section class="panel" aria-label="檔名格式">
@@ -235,6 +263,27 @@ textarea{width:100%;min-height:120px;background:var(--bg);border:1px solid var(-
       <button class="btn" id="mPrev" type="button">上一張</button>
       <button class="btn primary" id="mNext" type="button">下一張</button>
     </div>
+  </div>
+</div>
+
+<div class="modal" id="cropModal" hidden role="dialog" aria-modal="true" aria-labelledby="cPos">
+  <div class="mbox cbox2">
+    <div class="mhead"><span id="cPos"></span><button class="btn primary" id="cDone" type="button">完成</button></div>
+    <p class="hint">在圖上拖曳畫出要保留的範圍，也可以拖動方框或四個角調整。這個版本的每一張圖都會用同樣的位置與比例裁切。</p>
+    <div class="cwrap"><div class="cstage" id="cStage"><img id="cImg" alt="參考圖"><div class="cb" id="cBox"><i class="h" data-h="tl"></i><i class="h" data-h="tr"></i><i class="h" data-h="bl"></i><i class="h" data-h="br"></i></div></div></div>
+    <div class="row">
+      <button class="btn" id="cPrev" type="button">上一張參考圖</button>
+      <button class="btn" id="cNext" type="button">下一張參考圖</button>
+      <button class="btn" id="cReset" type="button">重設為整張</button>
+    </div>
+    <div class="fields">
+      <label class="f" for="cRatio">比例<select id="cRatio"><option value="free">自由</option><option value="1:1">1:1 正方形</option><option value="4:3">4:3</option><option value="3:4">3:4</option><option value="16:9">16:9</option><option value="9:16">9:16</option><option value="img">和原圖相同</option></select></label>
+      <label class="f" for="cx">左 x（px）<input type="number" id="cx" min="0" inputmode="numeric"></label>
+      <label class="f" for="cy">上 y（px）<input type="number" id="cy" min="0" inputmode="numeric"></label>
+      <label class="f" for="cw">寬（px）<input type="number" id="cw" min="1" inputmode="numeric"></label>
+      <label class="f" for="ch">高（px）<input type="number" id="ch" min="1" inputmode="numeric"></label>
+    </div>
+    <p class="hint" id="cNote">數字以目前這張參考圖的像素為準；尺寸不同的圖片會依相同比例裁切。</p>
   </div>
 </div>
 
@@ -315,6 +364,7 @@ function cleanProject(o){
     name:S(g.name,60),variant:S(g.variant,60),
     start:clampInt(g.start,0,9999,1),digits:clampInt(g.digits,1,4,1),
     numStyle:['paren','plain','bracket'].includes(g.numStyle)?g.numStyle:'paren',
+    crop:cleanCrop(g.crop),
     tokens:(Array.isArray(g.tokens)?g.tokens:[]).slice(0,40).filter(t=>t&&TYPES.includes(t.type)).map(t=>({type:t.type,text:S(t.text,40)})),
     items:(Array.isArray(g.items)?g.items:[]).slice(0,2000).map(i=>({
       desc:S(i&&i.desc,100),ext:S(i&&i.ext,6).replace(/[^A-Za-z0-9]/g,''),orig:S(i&&i.orig,200),path:S(i&&i.path,300)}))
@@ -363,6 +413,25 @@ function detectName(fn,variant){
   if(v&&desc.startsWith(v))desc=trim(desc.slice(v.length));
   return {name,num,desc};
 }
+const RATIOS=['free','1:1','4:3','3:4','16:9','9:16','img'];
+const defCrop=()=>({on:false,x:.25,y:.02,w:.5,h:.3,ratio:'free',outW:0,mode:'crop'});
+function cleanCrop(c){
+  const d=defCrop();
+  if(!c||typeof c!=='object')return d;
+  const n=(v,a,b,df)=>{v=parseFloat(v);return isNaN(v)?df:Math.max(a,Math.min(b,v));};
+  const o={on:!!c.on,x:n(c.x,0,1,d.x),y:n(c.y,0,1,d.y),w:n(c.w,.01,1,d.w),h:n(c.h,.01,1,d.h),
+    ratio:RATIOS.includes(c.ratio)?c.ratio:'free',outW:clampInt(c.outW,0,4096,0),mode:c.mode==='both'?'both':'crop'};
+  o.x=Math.min(o.x,1-o.w);o.y=Math.min(o.y,1-o.h);
+  return o;
+}
+/* fractions -> pixel rectangle for an image of W x H, plus output size */
+function cropRect(c,W,H){
+  const sx=Math.min(W-1,Math.max(0,Math.round(c.x*W))),sy=Math.min(H-1,Math.max(0,Math.round(c.y*H)));
+  const sw=Math.max(1,Math.min(W-sx,Math.round(c.w*W))),sh=Math.max(1,Math.min(H-sy,Math.round(c.h*H)));
+  let ow=sw,oh=sh;
+  if(c.outW>0){ow=c.outW;oh=Math.max(1,Math.round(sh*ow/sw));}
+  return {sx,sy,sw,sh,ow,oh};
+}
 //#PURE-END
 
 /* ---------- state ---------- */
@@ -370,7 +439,7 @@ const $=s=>document.querySelector(s);
 let uid=0;const nid=()=>'x'+(++uid);
 const tk=(type,text)=>({id:nid(),type,text:text||''});
 const defaultTokens=()=>[tk('name'),tk('sp'),tk('num'),tk('variant'),tk('desc')];
-const mkGroup=()=>({id:nid(),name:'',variant:'',start:1,digits:1,numStyle:'paren',tokens:defaultTokens(),items:[]});
+const mkGroup=()=>({id:nid(),name:'',variant:'',start:1,digits:1,numStyle:'paren',crop:defCrop(),tokens:defaultTokens(),items:[]});
 const groups=[mkGroup()];
 /* remembered format: localStorage, this browser only; every access guarded */
 const LS='spriteNamerV2';
@@ -479,6 +548,7 @@ function renderGrid(){
   const add=document.createElement('button');
   add.type='button';add.className='addtile';add.textContent=g.items.length?'＋ 新增圖片':'點這裡選擇圖片，或把圖片拖進頁面';
   el.grid.appendChild(add);
+  renderCropPanel();
 }
 /* live update of numbers + names; order = ids in current visual order (during drag) */
 function updateNames(order){
@@ -735,11 +805,11 @@ el.tabs.addEventListener('click',e=>{
   curId=b.dataset.gid;renderAll();
 });
 $('#btnNewGroup').addEventListener('click',()=>{
-  const src=cur(),g=mkGroup();applyFmt(g,fmtOf(src));g.name=src.name;groups.push(g);curId=g.id;renderAll();el.inVariant.focus();
+  const src=cur(),g=mkGroup();applyFmt(g,fmtOf(src));g.name=src.name;g.crop=Object.assign({},src.crop);groups.push(g);curId=g.id;renderAll();el.inVariant.focus();
 });
 $('#btnDup').addEventListener('click',()=>{
   const src=cur(),keep=$('#dupKeep').checked;
-  const g={id:nid(),name:src.name,variant:'',start:src.start,digits:src.digits,numStyle:src.numStyle,
+  const g={id:nid(),name:src.name,variant:'',start:src.start,digits:src.digits,numStyle:src.numStyle,crop:Object.assign({},src.crop),
     tokens:src.tokens.map(t=>({id:nid(),type:t.type,text:t.text})),
     items:src.items.map(i=>keep?Object.assign({},i,{id:nid()}):{id:nid(),file:null,url:null,ext:'',orig:'',desc:i.desc})};
   if(!g.tokens.some(t=>t.type==='variant')){
@@ -801,9 +871,10 @@ async function saveBlob(filename,blob){
     msg('沒有下載成功：'+(err&&err.message?err.message:'已取消')+'。',true);return false;
   }
 }
-function projectBlob(gs,paths){
+function projectBlob(gs,paths,applied){
   const data={app:'sprite-namer',v:1,groups:gs.map(g=>({
     name:g.name,variant:g.variant,start:g.start,digits:g.digits,numStyle:g.numStyle,
+    crop:Object.assign({},g.crop,{on:g.crop.on&&!(applied&&g.crop.mode==='crop')}),
     tokens:g.tokens.map(t=>({type:t.type,text:t.text})),
     items:g.items.map(it=>({desc:it.desc,ext:it.ext||'',orig:it.orig||'',path:paths.get(it.id)||''}))}))};
   return new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
@@ -816,22 +887,43 @@ $('#btnJson').addEventListener('click',doExportJson);
 async function doExport(all){
   const gs=all?groups:[cur()];
   const folder=all&&groups.length>1&&$('#optFolder').checked;
-  const entries=[];let empty=0;const dirUsed=new Set(),flatUsed=new Set(),paths=new Map();
+  const entries=[];let empty=0,cropFail=0,cropped=0,done=0;
+  const dirUsed=new Set(),flatUsed=new Set(),paths=new Map();
+  const total=gs.reduce((n,g)=>n+g.items.filter(i=>i.file).length,0);
+  if(!total){msg('還沒有圖片可以匯出。',true);return;}
   for(const g of gs){
-    const used=folder?new Set():flatUsed;
+    const used=folder?new Set():flatUsed,usedCrop=new Set();
     let dir='';
     if(folder){
       dir=uniq((groupTitle(g).replace(BAD,'').replace(/\s*·\s*/g,'_')||'未命名'),dirUsed)+'/';
     }
-    g.items.forEach((it,i)=>{
-      if(!it.file){empty++;return;}
+    for(let i=0;i<g.items.length;i++){
+      const it=g.items[i];
+      if(!it.file){empty++;continue;}
+      if(g.crop.on){
+        msg('裁切中 '+(++done)+' / '+total+'…');
+        const r=await cropItem(it.file,it.ext,g.crop);
+        if(r){
+          cropped++;
+          const cname=fileName(g,i,Object.assign({},it,{ext:r.ext}));
+          if(g.crop.mode==='both'){
+            const op=dir+uniq(fileName(g,i,it),used);paths.set(it.id,op);
+            entries.push({path:op,blob:it.file});
+            entries.push({path:dir+'crop/'+uniq(cname,usedCrop),blob:r.blob});
+          }else{
+            const path=dir+uniq(cname,used);paths.set(it.id,path);
+            entries.push({path,blob:r.blob});
+          }
+          continue;
+        }
+        cropFail++;
+      }
       const path=dir+uniq(fileName(g,i,it),used);paths.set(it.id,path);
       entries.push({path,blob:it.file});
-    });
+    }
   }
-  if(!entries.length){msg('還沒有圖片可以匯出。',true);return;}
-  const nImg=entries.length;
-  if($('#optJson').checked)entries.unshift({path:'sprite-namer.json',blob:projectBlob(gs,paths)});
+  const nImg=total;
+  if($('#optJson').checked)entries.unshift({path:'sprite-namer.json',blob:projectBlob(gs,paths,true)});
   msg('打包 '+nImg+' 張圖片中…');
   const blob=await buildZip(entries);
   const g=cur();
@@ -839,7 +931,7 @@ async function doExport(all){
   const who=nm.length?(nm.length>1?nm[0]+'等':nm[0]):'立繪差分';
   const zname=(all&&groups.length>1?who+'_全部版本':who+(g.variant.trim()?'_'+g.variant.trim():'')).replace(BAD,'')+'.zip';
   const ok=await saveBlob(zname,blob);
-  if(ok)msg('已送出 '+nImg+' 張圖片的 ZIP（'+zname+'）'+($('#optJson').checked?'，內含設定檔':'')+(empty?'，另有 '+empty+' 個空位沒有圖片，已略過':'')+'。');
+  if(ok)msg('已送出 '+nImg+' 張圖片的 ZIP（'+zname+'）'+(cropped?'，其中 '+cropped+' 張已裁切':'')+(cropFail?'，'+cropFail+' 張裁切失敗，改輸出原圖':'')+($('#optJson').checked?'，內含設定檔':'')+(empty?'，另有 '+empty+' 個空位沒有圖片，已略過':'')+'。',!!cropFail);
 }
 $('#btnZip').addEventListener('click',()=>doExport(false));
 $('#btnZipAll').addEventListener('click',()=>doExport(true));
@@ -850,10 +942,152 @@ $('#btnCopy').addEventListener('click',async()=>{
   catch(_){el.listBox.open=true;el.listOut.focus();el.listOut.select();msg('無法直接複製，已把清單選取起來，請手動複製。',true);}
 });
 
+/* ---------- crop ---------- */
+const clampF=(v,a,b)=>Math.max(a,Math.min(b,v));
+let stripToken=0,cropIdx=0,natW=1,natH=1;
+const loadImg=url=>new Promise((res,rej)=>{const im=new Image();im.onload=()=>res(im);im.onerror=rej;im.src=url;});
+async function renderCropPanel(){
+  const g=cur(),c=g.crop;
+  $('#cropOn').checked=c.on;$('#cropCtl').hidden=!c.on;
+  $('#cropMode').value=c.mode;$('#cropOutW').value=c.outW||'';
+  const strip=$('#cropStrip'),info=$('#cropInfo');
+  const token=++stripToken;
+  strip.innerHTML='';
+  if(!c.on){info.textContent='';return;}
+  const files=g.items.filter(i=>i.file).slice(0,8);
+  if(!files.length){info.textContent='加入圖片後會在這裡顯示裁切預覽。';return;}
+  for(let k=0;k<files.length;k++){
+    let im;try{im=await loadImg(files[k].url);}catch(_){continue;}
+    if(token!==stripToken)return;
+    const r=cropRect(c,im.naturalWidth,im.naturalHeight);
+    const cv=document.createElement('canvas');
+    const h=96,w=Math.max(24,Math.min(220,Math.round(h*r.sw/r.sh)));
+    cv.width=w*2;cv.height=h*2;cv.style.width=w+'px';
+    cv.getContext('2d').drawImage(im,r.sx,r.sy,r.sw,r.sh,0,0,cv.width,cv.height);
+    strip.appendChild(cv);
+    if(k===0)info.textContent='以第一張（'+im.naturalWidth+'×'+im.naturalHeight+'）為例：裁切 '+r.sw+'×'+r.sh+' px，輸出 '+r.ow+'×'+r.oh+' px。';
+  }
+}
+$('#cropOn').addEventListener('change',e=>{
+  cur().crop.on=e.target.checked;renderCropPanel();
+  if(e.target.checked&&cur().items.some(i=>i.file))openCrop();
+});
+$('#cropMode').addEventListener('change',e=>{cur().crop.mode=e.target.value;});
+$('#cropOutW').addEventListener('input',e=>{
+  let v=clampInt(e.target.value,0,4096,0);if(v>0&&v<16)v=16;
+  cur().crop.outW=v;renderCropPanel();
+});
+$('#btnCropEdit').addEventListener('click',openCrop);
+
+const cm=$('#cropModal'),cStage=$('#cStage'),cImg=$('#cImg'),cBox=$('#cBox');
+function ratioVal(c){
+  if(c.ratio==='img')return natW/natH;
+  const m=/^(\d+):(\d+)$/.exec(c.ratio);return m?(+m[1])/(+m[2]):0;
+}
+function drawBox(skip){
+  const c=cur().crop;
+  cBox.style.left=c.x*100+'%';cBox.style.top=c.y*100+'%';cBox.style.width=c.w*100+'%';cBox.style.height=c.h*100+'%';
+  const vals={cx:c.x*natW,cy:c.y*natH,cw:c.w*natW,ch:c.h*natH};
+  for(const k in vals){if(k!==skip)$('#'+k).value=Math.round(vals[k]);}
+  $('#cRatio').value=c.ratio;
+}
+function openCrop(){
+  const g=cur();
+  if(!g.items.some(i=>i.file)){msg('先加入圖片，才能設定裁切範圍。',true);return;}
+  g.crop.on=true;cm.hidden=false;loadCropRef();
+}
+function loadCropRef(){
+  const files=cur().items.filter(i=>i.file);
+  cropIdx=Math.max(0,Math.min(cropIdx,files.length-1));
+  $('#cPos').textContent='設定裁切範圍（參考圖 '+(cropIdx+1)+' / '+files.length+'）';
+  cImg.onload=()=>{natW=cImg.naturalWidth;natH=cImg.naturalHeight;drawBox();};
+  cImg.src=files[cropIdx].url;
+}
+$('#cPrev').addEventListener('click',()=>{cropIdx--;loadCropRef();});
+$('#cNext').addEventListener('click',()=>{cropIdx++;loadCropRef();});
+$('#cDone').addEventListener('click',()=>{cm.hidden=true;renderCropPanel();});
+cm.addEventListener('click',e=>{if(e.target===cm){cm.hidden=true;renderCropPanel();}});
+window.addEventListener('keydown',e=>{if(e.key==='Escape'&&!cm.hidden){cm.hidden=true;renderCropPanel();}});
+$('#cReset').addEventListener('click',()=>{Object.assign(cur().crop,{x:0,y:0,w:1,h:1,ratio:'free'});drawBox();});
+$('#cRatio').addEventListener('change',e=>{
+  const c=cur().crop;c.ratio=e.target.value;
+  const r=ratioVal(c);
+  if(r){
+    const cx=c.x+c.w/2,cy=c.y+c.h/2;
+    let w=c.w,h=w*natW/(natH*r);
+    if(h>1){h=1;w=h*r*natH/natW;}
+    if(w>1){w=1;h=w*natW/(natH*r);}
+    c.w=w;c.h=h;c.x=clampF(cx-w/2,0,1-w);c.y=clampF(cy-h/2,0,1-h);
+  }
+  drawBox();
+});
+['cx','cy','cw','ch'].forEach(id=>$('#'+id).addEventListener('input',()=>{
+  const c=cur().crop,v=parseInt($('#'+id).value,10);
+  if(isNaN(v)||!natW)return;
+  const r=ratioVal(c);
+  if(id==='cx')c.x=clampF(v/natW,0,1-c.w);
+  else if(id==='cy')c.y=clampF(v/natH,0,1-c.h);
+  else if(id==='cw'){
+    c.w=clampF(v/natW,.01,1-c.x);
+    if(r)c.h=clampF(c.w*natW/(natH*r),.01,1-c.y);
+  }else{
+    c.h=clampF(v/natH,.01,1-c.y);
+    if(r)c.w=clampF(c.h*r*natH/natW,.01,1-c.x);
+  }
+  drawBox(id);
+}));
+/* drag on the picture: draw a new box, move the box, or pull a corner */
+cStage.addEventListener('pointerdown',e=>{
+  if(e.pointerType==='mouse'&&e.button!==0)return;
+  const c=cur().crop,rect=cStage.getBoundingClientRect();
+  const fx=(e.clientX-rect.left)/rect.width,fy=(e.clientY-rect.top)/rect.height;
+  const hd=e.target.closest('[data-h]'),inBox=e.target.closest('#cBox');
+  let mode,fixed,off,moved=false;
+  if(hd){mode='resize';const k=hd.dataset.h;fixed={x:k.includes('l')?c.x+c.w:c.x,y:k.includes('t')?c.y+c.h:c.y};}
+  else if(inBox){mode='move';off={x:fx-c.x,y:fy-c.y};moved=true;}
+  else{mode='draw';fixed={x:clampF(fx,0,1),y:clampF(fy,0,1)};}
+  e.preventDefault();
+  try{cStage.setPointerCapture(e.pointerId);}catch(_){}
+  const sx0=e.clientX,sy0=e.clientY;
+  cStage.onpointermove=ev=>{
+    if(!moved){if(Math.hypot(ev.clientX-sx0,ev.clientY-sy0)<5)return;moved=true;}
+    const px=(ev.clientX-rect.left)/rect.width,py=(ev.clientY-rect.top)/rect.height;
+    if(mode==='move'){c.x=clampF(px-off.x,0,1-c.w);c.y=clampF(py-off.y,0,1-c.h);drawBox();return;}
+    const qx=clampF(px,0,1),qy=clampF(py,0,1);
+    const sxn=qx>=fixed.x?1:-1,syn=qy>=fixed.y?1:-1;
+    let w=Math.abs(qx-fixed.x),h=Math.abs(qy-fixed.y);
+    const r=ratioVal(c);
+    if(r){
+      h=w*natW/(natH*r);
+      const maxH=syn>0?1-fixed.y:fixed.y;
+      if(h>maxH){h=maxH;w=h*r*natH/natW;}
+      const maxW=sxn>0?1-fixed.x:fixed.x;
+      if(w>maxW){w=maxW;h=w*natW/(natH*r);}
+    }
+    w=Math.max(w,.01);h=Math.max(h,.01);
+    c.w=w;c.h=h;c.x=sxn>0?fixed.x:fixed.x-w;c.y=syn>0?fixed.y:fixed.y-h;
+    c.x=clampF(c.x,0,1-c.w);c.y=clampF(c.y,0,1-c.h);
+    drawBox();
+  };
+  cStage.onpointerup=cStage.onpointercancel=()=>{cStage.onpointermove=null;cStage.onpointerup=null;cStage.onpointercancel=null;};
+});
+async function cropItem(file,ext,c){
+  let bmp;
+  try{bmp=await createImageBitmap(file);}catch(_){return null;}
+  const r=cropRect(c,bmp.width,bmp.height);
+  const cv=document.createElement('canvas');cv.width=r.ow;cv.height=r.oh;
+  const ctx=cv.getContext('2d');ctx.imageSmoothingQuality='high';
+  ctx.drawImage(bmp,r.sx,r.sy,r.sw,r.sh,0,0,r.ow,r.oh);
+  if(bmp.close)bmp.close();
+  const jpg=/^jpe?g$/i.test(ext||'');
+  const blob=await new Promise(res=>cv.toBlob(res,jpg?'image/jpeg':'image/png',0.95));
+  return blob?{blob,ext:jpg?'jpg':'png'}:null;
+}
+
 /* ---------- import ---------- */
 const isImg=f=>(f.type||'').startsWith('image/')||/\.(png|jpe?g|webp|gif|bmp|avif)$/i.test(f.name);
 function makeGroupFrom(c,resolve){
-  const g={id:nid(),name:c.name,variant:c.variant,start:c.start,digits:c.digits,numStyle:c.numStyle,
+  const g={id:nid(),name:c.name,variant:c.variant,start:c.start,digits:c.digits,numStyle:c.numStyle,crop:c.crop,
     tokens:c.tokens.length?c.tokens.map(t=>({id:nid(),type:t.type,text:t.text})):defaultTokens(),items:[]};
   for(const i of c.items){
     const f=resolve(i);
@@ -872,7 +1106,7 @@ async function importProject(list){
       if(low.endsWith('.zip')){
         for(const e of await readZip(f)){
           const bn=base(e.name);
-          if(e.name.startsWith('__MACOSX/')||bn.startsWith('._'))continue;
+          if(e.name.startsWith('__MACOSX/')||bn.startsWith('._')||/(^|\/)crop\//.test(e.name))continue;
           const x=((/\.([A-Za-z0-9]+)$/.exec(bn)||[])[1]||'').toLowerCase();
           if(x==='json'){
             if(!proj){try{const c=cleanProject(JSON.parse(new TextDecoder().decode(await inflateEntry(e))));if(c)proj=c;}catch(_){}}
