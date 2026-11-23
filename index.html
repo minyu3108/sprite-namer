@@ -82,20 +82,43 @@ input[type=text],input[type=number],select{background:var(--bg);border:1px solid
 .segb{border:0;background:var(--panel);padding:8px 18px;cursor:pointer;min-height:40px}
 .segb.on{background:var(--accent);color:var(--accent-ink);font-weight:500}
 .view{display:flex;flex-direction:column;gap:16px}
-.compgrid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}
-.compleft{display:flex;flex-direction:column;gap:12px;min-width:0}
-.compleft{grid-column:1;grid-row:1}
-.comppv{grid-column:2;grid-row:1;position:sticky;top:12px;display:flex;flex-direction:column;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;min-width:0}
+.compgrid{display:grid;grid-template-columns:230px minmax(0,1fr);gap:24px;align-items:start}
+.compmain{display:flex;flex-direction:column;gap:20px;min-width:0}
+body.wide .wrap{max-width:1240px}
+.cside{position:sticky;top:12px;display:flex;flex-direction:column;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px;max-height:calc(100vh - 100px);overflow:auto}
+#quickRow{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+#quickRow[hidden]{display:none}
+#quickRow .btn{padding:6px 8px;font-size:13px}
+.slist{display:flex;flex-direction:column;gap:4px}
+.sitem{display:flex;align-items:center;gap:6px;padding:8px 8px;border-radius:10px;border:1px solid transparent;cursor:pointer}
+.sitem:hover{background:var(--bg)}
+.sitem.on{background:var(--bg);border-color:var(--accent)}
+.sitem.droptarget{outline:2px dashed var(--accent);outline-offset:1px}
+.sitem .grip{cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;color:var(--muted);padding:4px 2px}
+.sbody{flex:1;min-width:0}
+.sname{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ssub{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sbadge{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:1px 7px;white-space:nowrap}
+.sempty{font-size:13px;color:var(--muted);padding:6px 4px}
+.cdetail{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;align-items:start;background:var(--panel);border:1px solid color-mix(in srgb,var(--line) 55%,transparent);border-radius:14px;padding:20px 22px}
+.cdetail .cgroups{grid-column:1;grid-row:1}
+.comppv{grid-column:2;grid-row:1;position:sticky;top:12px;display:flex;flex-direction:column;gap:8px;min-width:0}
 .cpv{display:block;text-align:center;line-height:0;background:repeating-conic-gradient(var(--line) 0 25%,transparent 0 50%) 0 0/16px 16px;border-radius:8px}
 .cpv canvas{display:inline-block;max-width:100%;max-height:min(60vh,540px)}
-@media (max-width:760px){
+@media (max-width:900px){
   .compgrid{grid-template-columns:minmax(0,1fr)}
-  .comppv{grid-column:1;grid-row:1;top:0;z-index:40;padding:8px}
-  .compleft{grid-row:2}
-  .cpv canvas{max-height:32vh}
+  .cside{position:sticky;top:0;z-index:45;max-height:none;flex-direction:row;align-items:center;overflow-x:auto;padding:8px}
+  .cside .slist{flex-direction:row}
+  .cside .sitem{min-width:130px}
+  .cside .shead{flex:none}
+  .cdetail{grid-template-columns:minmax(0,1fr)}
+  .comppv{grid-column:1;grid-row:1;position:static}
+  .cdetail .cgroups{grid-row:2}
+  .cpv canvas{max-height:36vh}
 }
 .cgroups{display:flex;flex-direction:column;gap:12px}
-.cgroup{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px}
+.cgroup{display:none;flex-direction:column;gap:12px}
+.cgroup.cur{display:flex}
 .cgroup.dragging,.clrow.dragging{opacity:.25}
 .cgroup.dropping{outline:2px dashed var(--accent)}
 .cgtop{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
@@ -104,11 +127,9 @@ input[type=text],input[type=number],select{background:var(--bg);border:1px solid
 .cgtop select{width:auto;min-height:38px}
 .xbtn{border:0;background:transparent;cursor:pointer;width:30px;height:30px;border-radius:6px;color:var(--muted);font-size:16px;flex:0 0 auto}
 .xbtn:hover{background:var(--line);color:var(--ink)}
-.clayers{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:4px}
+.clayers{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
 .clnone{grid-column:1/-1}
 .clrow .clname{min-width:0;flex:1 1 0;width:auto}
-.cgfold{min-width:32px}
-.cgroup.collapsed .clayers,.cgroup.collapsed .cgadd{display:none}
 section.panel,.cgroup{scroll-margin-top:64px}
 .dock{position:fixed;left:50%;transform:translateX(-50%);bottom:12px;z-index:60;width:min(960px,calc(100% - 24px));background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:0 8px 28px rgba(0,0,0,.16)}
 .dockin{display:flex;gap:4px;align-items:center;padding:6px 8px}
@@ -125,7 +146,7 @@ section.panel,.cgroup{scroll-margin-top:64px}
 @media(max-width:600px){.dockin .jump{display:none}}
 .clrow,.clnone{display:flex;align-items:center;gap:8px;padding:4px 6px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
 .clnone{color:var(--muted);cursor:pointer}
-.clth{width:40px;height:40px;object-fit:contain;border-radius:4px;background:repeating-conic-gradient(var(--line) 0 25%,transparent 0 50%) 0 0/10px 10px;flex:0 0 auto}
+.clth{width:56px;height:56px;object-fit:contain;border-radius:4px;background:repeating-conic-gradient(var(--line) 0 25%,transparent 0 50%) 0 0/10px 10px;flex:0 0 auto}
 .clname{flex:1 1 0;min-width:0}
 .clsel{width:20px;height:20px;flex:0 0 auto}
 .clwarn{color:var(--warn);cursor:help}
@@ -204,19 +225,24 @@ textarea{width:100%;min-height:120px;background:var(--bg);border:1px solid var(-
 .mnav .btn{flex:1}
 @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 
+/* auto-naming advanced row */
+.cgadv{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;padding:10px 12px;border-radius:10px;background:var(--bg)}
+.cgadv[hidden]{display:none}
+.afld{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)}
+.afld input,.afld select{width:120px;min-height:34px}
+.cgnone[hidden]{display:none}
+.cgnone{display:inline-flex;align-items:center;gap:4px;font-size:13px;color:var(--muted);white-space:nowrap;cursor:pointer}
 /* calmer layout: more air between blocks, lighter borders (same information) */
 .wrap,.view{gap:24px}
 .compgrid{gap:24px}
 .panel{padding:20px 22px;gap:16px;border-color:color-mix(in srgb,var(--line) 55%,transparent);box-shadow:0 1px 3px rgba(16,24,40,.05)}
 .compleft{gap:20px}.cgroups{gap:16px}
-.cgroup{padding:16px;gap:12px;border-radius:14px;border-color:color-mix(in srgb,var(--line) 70%,transparent)}
 .clayers{gap:8px}
 .clrow,.clnone{border-color:transparent;padding:6px 8px}
 .row{gap:10px}
 .hint{line-height:1.7}
 .cgsum{margin:0 2px;line-height:1.6}
 .notice{padding:10px 12px}
-.comppv{border-color:color-mix(in srgb,var(--line) 55%,transparent)}
 </style>
 </head>
 <body>
@@ -342,12 +368,9 @@ textarea{width:100%;min-height:120px;background:var(--bg);border:1px solid var(-
         <label class="f" for="cmpName">角色名字（送到命名時使用，可留空）<input type="text" id="cmpName" autocomplete="off" placeholder="例如：艾莉"></label>
       </div>
       <div class="row">
-        <button class="btn primary" id="cmpToggleAdd" type="button" aria-expanded="false">＋ 新增圖層組</button>
         <button class="btn" id="cmpAddPsd" type="button">匯入 PSD</button>
         <button class="btn" id="cmpSample" type="button">載入範例</button>
       </div>
-      <div class="row" id="quickRow" hidden><button class="btn" id="cmpAddBody" type="button">＋ 身體</button><button class="btn" id="cmpAddCloth" type="button">＋ 衣服</button><button class="btn" id="cmpAddEye" type="button">＋ 眼睛</button><button class="btn" id="cmpAddBrow" type="button">＋ 眉毛</button><button class="btn" id="cmpAddMouth" type="button">＋ 嘴</button><button class="btn" id="cmpAddFace" type="button">＋ 表情（整張）</button><button class="btn" id="cmpAddAcc" type="button">＋ 配件（多選）</button><button class="btn" id="cmpAddBlank" type="button">＋ 空白</button></div>
-
       <p class="hint"><strong>第一次用？</strong>按「載入範例」，會放入幾張畫好的簡單圖層，直接按「合成並送到命名」就能看到結果。</p>
       <details class="howto"><summary>使用說明（流程與「用法」怎麼選）</summary>
       <p class="hint"><strong>流程：</strong>① 新增圖層組並放入 PNG，或直接「匯入 PSD」（PSD 的資料夾會變成圖層組，隱藏的圖層不會預先勾選）。② 每個圖層組選一種用法（見下）。③ 輸出。列表越上面越在上層，可拖曳 ⠿ 調整。</p>
@@ -359,14 +382,21 @@ textarea{width:100%;min-height:120px;background:var(--bg);border:1px solid var(-
     </details>
     </section>
     <div class="compgrid">
-      <aside class="comppv" aria-label="預覽">
-        <strong>預覽</strong>
-        <div class="cpv"><canvas id="cmpPv" width="1" height="1"></canvas></div>
-        <div class="hint" id="cmpPvInfo"></div>
-      </aside>
-      <div class="compleft">
-        <div class="row" style="margin:0 0 6px;flex-wrap:nowrap"><span class="hint" style="flex:1">💡 圖層名稱會變成檔名裡的形容（差分）或版本名稱。這裡不用一次取好，送到「命名」分頁後，也可以再修改差分名稱和形容。</span><button class="btn" id="cmpFoldAll" type="button" style="white-space:nowrap">全部折疊／展開</button></div>
-        <div class="cgroups" id="cmpGroups"></div>
+      <nav class="cside" id="cmpSide" aria-label="圖層組">
+        <div class="shead"><button class="btn primary" id="cmpToggleAdd" type="button" aria-expanded="false" style="width:100%">＋ 新增圖層組</button></div>
+        <div id="quickRow" hidden><button class="btn" id="cmpAddBody" type="button">＋ 身體</button><button class="btn" id="cmpAddCloth" type="button">＋ 衣服</button><button class="btn" id="cmpAddEye" type="button">＋ 眼睛</button><button class="btn" id="cmpAddBrow" type="button">＋ 眉毛</button><button class="btn" id="cmpAddMouth" type="button">＋ 嘴</button><button class="btn" id="cmpAddFace" type="button">＋ 表情（整張）</button><button class="btn" id="cmpAddAcc" type="button">＋ 配件（多選）</button><button class="btn" id="cmpAddBlank" type="button">＋ 空白</button></div>
+        <div class="slist" id="cmpSideList"></div>
+      </nav>
+      <div class="compmain">
+        <p class="hint" style="margin:0">💡 圖層名稱會變成檔名裡的形容（差分）或版本名稱。這裡不用一次取好，送到「命名」分頁後，也可以再修改差分名稱和形容。</p>
+        <div class="cdetail">
+          <div class="cgroups" id="cmpGroups"></div>
+          <aside class="comppv" aria-label="預覽">
+            <strong>預覽</strong>
+            <div class="cpv"><canvas id="cmpPv" width="1" height="1"></canvas></div>
+            <div class="hint" id="cmpPvInfo"></div>
+          </aside>
+        </div>
         <section class="panel" aria-label="組合清單">
           <h2>組合清單</h2>
           <p class="hint">在上面勾好一種組合（例如某個眼睛＋眉毛＋嘴），取個名字存起來，再勾下一種。名字會當作這張圖的形容。最後一次輸出全部。</p>
@@ -1341,6 +1371,7 @@ function setView(v){
   $('#viewNamer').hidden=v!=='namer';$('#viewComp').hidden=v!=='comp';
   $('#tabNamer').classList.toggle('on',v==='namer');$('#tabComp').classList.toggle('on',v==='comp');
   $('#tabNamer').setAttribute('aria-selected',v==='namer');$('#tabComp').setAttribute('aria-selected',v==='comp');
+  document.body.classList.toggle('wide',v==='comp');
   window.scrollTo(0,0);updateDock();
 }
 
@@ -1379,13 +1410,13 @@ $('#tabComp').addEventListener('click',()=>{setView('comp');drawPv();});
 /* ---------- compose layers ---------- */
 const comp={groups:[],combos:[],itemMode:'auto'};
 const PV_MAX=720,BMP_BUDGET=256*1024*1024;
-const cmp={groups:$('#cmpGroups'),pv:$('#cmpPv'),pvInfo:$('#cmpPvInfo'),plan:$('#cmpPlan'),msg:$('#cmpMsg'),run:$('#cmpRun'),stop:$('#cmpStop'),file:$('#cmpFile'),name:$('#cmpName')};
+const cmp={groups:$('#cmpGroups'),side:$('#cmpSide'),sideList:$('#cmpSideList'),pv:$('#cmpPv'),pvInfo:$('#cmpPvInfo'),plan:$('#cmpPlan'),msg:$('#cmpMsg'),run:$('#cmpRun'),stop:$('#cmpStop'),file:$('#cmpFile'),name:$('#cmpName')};
 let cmpTarget=null,cmpBusy=false,cmpStop=false;
 function cmpMsg(t,warn){cmp.msg.textContent=t;cmp.msg.className='notice'+(warn?' warn':'');}
 function addCmpGroup(name,mode,role){
   const g={id:nid(),name,mode,role,sel:null,layers:[]};
-  comp.groups.unshift(g);renderComp();
-  requestAnimationFrame(()=>{const el=document.querySelector('#cmpGroups .cgroup[data-id="'+g.id+'"]');if(el)el.scrollIntoView({behavior:'smooth',block:'nearest'});});
+  comp.groups.unshift(g);comp.cur=g.id;renderComp();
+  requestAnimationFrame(()=>{const el=$('.cdetail');if(el)el.scrollIntoView({behavior:'smooth',block:'nearest'});});
   return g;
 }
 $('#cmpAddBody').addEventListener('click',()=>addCmpGroup('身體','single','fixed'));
@@ -1409,19 +1440,39 @@ function layersInOrder(ids){
 }
 function cmpDims(){for(const g of comp.groups)for(const l of g.layers)return {w:l.w,h:l.h};return null;}
 
+const autoOf=g=>Object.assign({prefix:'',start:1,digits:1,sep:'',dir:'down'},g.auto||{});
+function applyAutoName(g){
+  const a=autoOf(g),pre=(a.prefix||g.name||'').trim()||'圖層',n=g.layers.length;
+  g.layers.forEach((l,i)=>{
+    const k=(a.dir==='up'?n-1-i:i)+a.start;
+    l.name=pre+a.sep+String(k).padStart(a.digits,'0');
+  });
+}
 function groupEl(g){
   const el=document.createElement('div');
   el.className='cgroup';el.dataset.id=g.id;
-  el.innerHTML='<div class="cgtop"><span class="grip" aria-hidden="true">⠿</span><button class="xbtn cgfold" type="button" aria-label="折疊或展開這個圖層組"></button>'+
+  el.innerHTML='<div class="cgtop">'+
     '<input type="text" class="cgname" aria-label="圖層組名稱" placeholder="圖層組名稱，例如：表情" autocomplete="off">'+
     '<select class="cgmode" aria-label="選擇方式"><option value="single">單選</option><option value="multi">多選</option></select>'+
     '<select class="cgrole" aria-label="用法"><option value="fixed">每張都一樣</option><option value="version">分成版本</option><option value="item">分成差分</option></select>'+
+    '<label class="cgnone" title="多輸出一個「沒有這組圖層」的結果。只有一個圖層（例如帽子）也能分成「有／沒有」，不用另外準備空白圖層"><input type="checkbox" class="cgnonecb">含「沒有」</label>'+
     '<button class="xbtn gx" type="button" aria-label="刪除這個圖層組">×</button></div>'+
     '<div class="cgsum" aria-live="polite"></div><div class="clayers"></div>'+
-    '<div class="row cgadd"><button class="btn cadd" type="button">＋ 加入圖層（PNG）</button><span class="hint">也可以把 PNG 拖進這個框</span></div>';
+    '<div class="row cgadd"><button class="btn cadd" type="button">＋ 加入圖層（PNG）</button><button class="btn cauto" type="button" title="把這組的圖層依序改名">自動命名</button><button class="btn cadvbtn" type="button" aria-label="自動命名的進階設定" title="進階設定">⚙</button><span class="hint">也可以把 PNG 拖進這個框</span></div>'+
+    '<div class="cgadv" hidden>'+
+      '<label class="afld">名稱前綴<input type="text" class="aprefix" autocomplete="off"></label>'+
+      '<label class="afld">起始編號<input type="number" class="astart" min="0" step="1"></label>'+
+      '<label class="afld">位數<select class="adigits"><option value="1">1（1、2…）</option><option value="2">2（01、02…）</option><option value="3">3（001…）</option></select></label>'+
+      '<label class="afld">連接符號<input type="text" class="asep" autocomplete="off" placeholder="（無）"></label>'+
+      '<label class="afld">編號方向<select class="adir"><option value="down">由上到下</option><option value="up">由下到上</option></select></label>'+
+      '<span class="hint" style="flex-basis:100%">名稱前綴留空時，用圖層組名稱。例：組名「頭髮」→ 頭髮1、頭髮2…。按「自動命名」套用。</span>'+
+    '</div>';
   el.querySelector('.cgname').value=g.name;
-  el.classList.toggle('collapsed',!!g.collapsed);el.querySelector('.cgfold').textContent=g.collapsed?'▸':'▾';
+  el.classList.toggle('cur',comp.cur===g.id);
   el.querySelector('.cgmode').value=g.mode;
+  {const a=autoOf(g);el.querySelector('.aprefix').value=a.prefix;el.querySelector('.astart').value=a.start;el.querySelector('.adigits').value=String(a.digits);el.querySelector('.asep').value=a.sep;el.querySelector('.adir').value=a.dir;
+   el.querySelector('.cgadv').hidden=!g.advOpen;
+   const nb=el.querySelector('.cgnone');nb.hidden=!(g.mode==='single'&&g.role!=='fixed');nb.querySelector('input').checked=noneOf(g);}
   el.querySelector('.cgrole').value=g.role;
   const lc=el.querySelector('.clayers'),d=cmpDims();
   if(g.mode==='single'){
@@ -1450,15 +1501,43 @@ function groupEl(g){
 }
 function renderComp(){
   const box=cmp.groups;box.innerHTML='';
+  if(!comp.groups.some(g=>g.id===comp.cur))comp.cur=comp.groups.length?comp.groups[0].id:null;
   if(!comp.groups.length){
     const p=document.createElement('p');p.className='hint';
-    p.textContent='還沒有圖層組。先按上面的快速新增，再把 PNG 圖層放進去。';box.appendChild(p);
+    p.textContent='還沒有圖層組。按左邊的「＋ 新增圖層組」，再把 PNG 圖層放進去；也可以匯入 PSD 或載入範例。';box.appendChild(p);
   }
   for(const g of comp.groups)box.appendChild(groupEl(g));
   drawPv();renderPlan();
 }
-sortable(cmp.groups,{item:'.cgroup',handle:'.cgtop .grip',axis:'y',onLive:()=>{},
-  onCommit:ids=>{const m=new Map(comp.groups.map(g=>[g.id,g]));comp.groups=ids.map(id=>m.get(id));drawPv();renderPlan();}});
+const ROLE_SHORT={fixed:'固定',version:'版本',item:'差分'};
+function updateSide(){
+  const box=cmp.sideList;box.innerHTML='';
+  if(!comp.groups.length){const p=document.createElement('div');p.className='sempty';p.textContent='（還沒有圖層組）';box.appendChild(p);return;}
+  for(const g of comp.groups){
+    const it=document.createElement('div');it.className='sitem'+(g.id===comp.cur?' on':'');it.dataset.id=g.id;
+    const names=curSel(g).map(id=>{const f=findLayer(id);return f?f.l.name.trim():'';}).filter(Boolean);
+    it.innerHTML='<span class="grip" aria-hidden="true" title="拖曳調整上下順序">⠿</span><div class="sbody"><div class="sname"></div><div class="ssub"></div></div><span class="sbadge"></span>';
+    it.querySelector('.sname').textContent=g.name.trim()||'（未命名）';
+    it.querySelector('.ssub').textContent=g.layers.length?(names.length?'目前：'+names.join('、'):'目前：不使用')+'・共 '+g.layers.length+' 個':'還沒有圖層';
+    it.querySelector('.sbadge').textContent=ROLE_SHORT[g.role]||'';
+    box.appendChild(it);
+  }
+}
+function selectGroup(id){
+  comp.cur=id;
+  cmp.groups.querySelectorAll('.cgroup').forEach(el=>el.classList.toggle('cur',el.dataset.id===id));
+  cmp.sideList.querySelectorAll('.sitem').forEach(el=>el.classList.toggle('on',el.dataset.id===id));
+}
+cmp.sideList.addEventListener('click',e=>{const it=e.target.closest('.sitem');if(it&&!e.target.closest('.grip'))selectGroup(it.dataset.id);});
+sortable(cmp.sideList,{item:'.sitem',handle:'.grip',axis:'y',onLive:()=>{},
+  onCommit:ids=>{const m=new Map(comp.groups.map(g=>[g.id,g]));comp.groups=ids.map(id=>m.get(id)).filter(Boolean);renderComp();}});
+cmp.sideList.addEventListener('dragover',e=>{const it=e.target.closest('.sitem');if(it&&hasFiles(e)){e.preventDefault();e.stopPropagation();it.classList.add('droptarget');}});
+cmp.sideList.addEventListener('dragleave',e=>{const it=e.target.closest('.sitem');if(it&&!it.contains(e.relatedTarget))it.classList.remove('droptarget');});
+cmp.sideList.addEventListener('drop',e=>{
+  const it=e.target.closest('.sitem');if(!it||!hasFiles(e))return;
+  e.preventDefault();e.stopPropagation();it.classList.remove('droptarget');
+  addLayerFiles(it.dataset.id,[...e.dataTransfer.files]);
+});
 
 /* drag a layer to reorder it, or into another group */
 cmp.groups.addEventListener('pointerdown',e=>{
@@ -1469,11 +1548,12 @@ cmp.groups.addEventListener('pointerdown',e=>{
   let on=false,ghost=null,ox=0,oy=0,lx=sx,ly=sy,timer=null,hot=null;
   const pos=()=>{ghost.style.left=(lx-ox)+'px';ghost.style.top=(ly-oy)+'px';};
   const place=()=>{
-    const under=document.elementFromPoint(lx,ly),ge=under&&under.closest?under.closest('#cmpGroups .cgroup'):null;
-    if(hot&&hot!==ge)hot.classList.remove('droptarget');
-    hot=ge;if(!ge)return;
-    if(ge.classList.contains('collapsed')){ge.classList.remove('collapsed');const gg=comp.groups.find(x=>x.id===ge.dataset.id);if(gg)gg.collapsed=false;const fb=ge.querySelector('.cgfold');if(fb)fb.textContent='▾';}
-    if(ge!==srcEl)ge.classList.add('droptarget');else ge.classList.remove('droptarget');
+    const under=document.elementFromPoint(lx,ly),si=under&&under.closest?under.closest('#cmpSideList .sitem'):null;
+    const ge=si?cmp.groups.querySelector('.cgroup[data-id="'+si.dataset.id+'"]'):(under&&under.closest?under.closest('#cmpGroups .cgroup'):null);
+    if(hot&&hot!==si)hot.classList.remove('droptarget');
+    hot=si;if(si)si.classList.add('droptarget');
+    if(!ge)return;
+    if(si){const lc0=ge.querySelector('.clayers');if(item.parentNode!==lc0||ge!==srcEl)lc0.appendChild(item);return;}
     const lc=ge.querySelector('.clayers'),sibs=[...lc.querySelectorAll('.clrow')].filter(r=>r!==item);
     if(!sibs.length){if(item.parentNode!==lc)lc.appendChild(item);return;}
     let best=null,bd=Infinity,br=null;
@@ -1528,14 +1608,15 @@ function commitLayerOrder(movedId){
 
 $('#cmpToggleAdd').addEventListener('click',()=>{const q=$('#quickRow');q.hidden=!q.hidden;$('#cmpToggleAdd').setAttribute('aria-expanded',String(!q.hidden));});
 $('#quickRow').addEventListener('click',e=>{if(e.target.closest('button')){$('#quickRow').hidden=true;$('#cmpToggleAdd').setAttribute('aria-expanded','false');}});
-$('#cmpFoldAll').addEventListener('click',()=>{
-  const fold=comp.groups.some(g=>!g.collapsed);
-  comp.groups.forEach(g=>{g.collapsed=fold;});renderComp();
-});
 function findLayer(id){for(const g of comp.groups){const l=g.layers.find(x=>x.id===id);if(l)return {g,l};}return null;}
+function readAuto(grp,g){
+  const q=c=>grp.querySelector(c);
+  g.auto={prefix:q('.aprefix').value,start:Math.max(0,parseInt(q('.astart').value,10)||0),digits:parseInt(q('.adigits').value,10)||1,sep:q('.asep').value,dir:q('.adir').value};
+}
 cmp.groups.addEventListener('input',e=>{
   const row=e.target.closest('.clrow'),grp=e.target.closest('.cgroup');if(!grp)return;
   const g=comp.groups.find(x=>x.id===grp.dataset.id);if(!g)return;
+  if(e.target.closest('.cgadv')){readAuto(grp,g);return;}
   if(e.target.classList.contains('cgname')){g.name=e.target.value;renderPlan();}
   else if(e.target.classList.contains('clname')&&row){const l=g.layers.find(x=>x.id===row.dataset.id);if(l){l.name=e.target.value;renderPlan();}}
 });
@@ -1547,7 +1628,9 @@ cmp.groups.addEventListener('change',e=>{
     if(m==='multi'&&g.mode==='single'){g.layers.forEach(l=>{l.on=l.id===g.sel;});}
     if(m==='single'&&g.mode==='multi'){const f=g.layers.find(l=>l.on);g.sel=f?f.id:null;}
     g.mode=m;renderComp();
-  }else if(e.target.classList.contains('cgrole')){g.role=e.target.value;renderPlan();}
+  }else if(e.target.classList.contains('cgrole')){g.role=e.target.value;renderComp();}
+  else if(e.target.classList.contains('cgnonecb')){g.none=e.target.checked;renderPlan();}
+  else if(e.target.closest('.cgadv')){readAuto(grp,g);}
   else if(e.target.classList.contains('clsel')){
     if(g.mode==='single')g.sel=e.target.value||null;
     else{const l=g.layers.find(x=>x.id===e.target.value);if(l)l.on=e.target.checked;}
@@ -1558,7 +1641,8 @@ cmp.groups.addEventListener('click',e=>{
   if(dragged)return;
   const grp=e.target.closest('.cgroup');if(!grp)return;
   const g=comp.groups.find(x=>x.id===grp.dataset.id);if(!g)return;
-  if(e.target.closest('.cgfold')){g.collapsed=!g.collapsed;grp.classList.toggle('collapsed',!!g.collapsed);e.target.closest('.cgfold').textContent=g.collapsed?'▸':'▾';}
+  if(e.target.closest('.cauto')){readAuto(grp,g);applyAutoName(g);renderComp();}
+  else if(e.target.closest('.cadvbtn')){g.advOpen=!g.advOpen;grp.querySelector('.cgadv').hidden=!g.advOpen;}
   else if(e.target.closest('.gx')){comp.groups=comp.groups.filter(x=>x!==g);renderComp();}
   else if(e.target.closest('.lx')){
     const row=e.target.closest('.clrow');g.layers=g.layers.filter(l=>l.id!==row.dataset.id);
@@ -1698,7 +1782,7 @@ async function importPsd(file){
       }
       if(g.layers.length)made.push(g);
     }
-    comp.groups=made.concat(comp.groups.filter(g=>g.layers.length));
+    comp.groups=made.concat(comp.groups.filter(g=>g.layers.length));comp.cur=made[0]?made[0].id:comp.cur;
     if(!cmp.name.value.trim()&&!cur().name.trim())cmp.name.value=base;
     renderComp();
     let t='已匯入 '+made.length+' 個圖層組、'+done+' 個圖層（'+W+'×'+H+'）。用法是依名稱猜的，請檢查每組的「用法」與上下順序。';
@@ -1799,7 +1883,7 @@ async function loadSample(){
     await add('眼睛','item',Object.entries(eyes));
     await add('衣服','version',[['制服',cloth('#3a63c8')],['便服',cloth('#3a9a5a')]]);
     await add('身體','fixed',[['身體',body]]);
-    comp.groups=gs.concat(comp.groups);comp.itemMode='auto';
+    comp.groups=gs.concat(comp.groups);comp.itemMode='auto';comp.cur=gs[0]?gs[0].id:comp.cur;
     if(!cmp.name.value.trim())cmp.name.value='範例角色';
     renderComp();
     cmpMsg('已載入範例：身體每張都一樣；衣服分成 2 個版本；眼睛和嘴分成差分，會互相搭配。看每組下面的說明，再按「合成並送到命名」試試。不需要時按各組右上角 × 刪除。');
@@ -1818,11 +1902,16 @@ function drawPv(){
   for(const l of layersInOrder(ids))ctx.drawImage(l.prev,0,0,l.w*sc,l.h*sc);
   cmp.pvInfo.textContent='原尺寸 '+d.w+'×'+d.h+' px。預覽是目前勾選的組合，輸出時會依各組的「用法」展開。';
 }
+const noneOf=g=>g.none==null?g.layers.length===1:!!g.none;
 function optsOf(g){
   if(g.role==='fixed')return [{label:'',ids:curSel(g)}];
   if(!g.layers.length)return [{label:'',ids:[]}];
-  if(g.mode==='single')return g.layers.map(l=>({label:l.name.trim(),ids:[l.id]}));
-  const n=g.layers.length;if(n>6)return null;
+  if(g.mode==='single'){
+    const r=g.layers.map(l=>({label:l.name.trim(),ids:[l.id]}));
+    return noneOf(g)?[{label:'',ids:[]}].concat(r):r;   /* "沒有這組" as an extra result, so no blank layer is needed */
+  }
+  const n=g.layers.length;
+  if(n>6)return null;
   const out=[];
   for(let m=0;m<(1<<n);m++){
     const ls=g.layers.filter((l,i)=>m&(1<<i));
@@ -1841,7 +1930,7 @@ function product(lists){
 }
 function buildPlan(){
   const fixed=[],vers=[],items=[],combo=comp.itemMode==='combo';
-  const tooMany=g=>({error:'「'+(g.name||'未命名')+'」是多選組，圖層超過 6 個，無法展開所有組合。請改成「固定」或拆成多個圖層組。'});
+  const tooMany=g=>({error:'「'+(g.name||'未命名')+'」是多選組，圖層超過 6 個，無法展開所有組合。請改成「每張都一樣」或拆成多個圖層組。'});
   for(const g of comp.groups){
     if(g.role==='version'){const o=optsOf(g);if(!o)return tooMany(g);vers.push(o);}
     else if(!combo){
@@ -1879,17 +1968,17 @@ function groupSummary(g){
   }
   if(g.role==='version'){
     if(g.mode==='multi'){
-      if(n>6)return '多選組圖層超過 6 個，無法展開。';
+      if(n>6)return '多選組圖層超過 6 個，無法展開，請改成「每張都一樣」或拆成多個圖層組。';
       return '會產生 <b>'+(1<<n)+' 個版本</b>（所有勾選組合，含都不開）。';
     }
-    return '會產生 <b>'+n+' 個版本</b>：'+esc(cut(g.layers.map(nm)));
+    return '會產生 <b>'+(n+(noneOf(g)?1:0))+' 個版本</b>：'+esc(cut((noneOf(g)?['（沒有）']:[]).concat(g.layers.map(nm))));
   }
   if(comp.itemMode==='combo')return '差分由「組合清單」決定，這裡的勾選只影響預覽與存組合。';
   if(g.mode==='multi'){
-    if(n>6)return '多選組圖層超過 6 個，無法展開。';
+    if(n>6)return '多選組圖層超過 6 個，無法展開，請改成「每張都一樣」或拆成多個圖層組。';
     return '每個版本內會有 <b>'+(1<<n)+' 張</b>（所有勾選組合）。';
   }
-  return '每個版本內會有 <b>'+n+' 張</b>：'+esc(cut(g.layers.map(nm)));
+  return '每個版本內會有 <b>'+(n+(noneOf(g)?1:0))+' 張</b>：'+esc(cut((noneOf(g)?['（沒有）']:[]).concat(g.layers.map(nm))));
 }
 function updateSums(){
   document.querySelectorAll('#cmpGroups .cgroup').forEach(el=>{
@@ -1898,7 +1987,7 @@ function updateSums(){
   });
 }
 function renderPlan(){
-  updateSums();
+  updateSums();updateSide();
   const p=buildPlan(),el=cmp.plan;
   $('#cmpModeCombo').checked=comp.itemMode==='combo';$('#cmpModeAuto').checked=comp.itemMode!=='combo';
   $('#cmpComboCount').textContent=comp.combos.length;
