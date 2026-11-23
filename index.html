@@ -275,6 +275,10 @@ textarea{width:100%;min-height:120px;background:var(--bg);border:1px solid var(-
       <button class="btn warn" id="btnDelGroup" type="button">刪除此版本</button>
     </div>
     <div class="row">
+      <button class="btn" id="btnSyncDesc" type="button">把這個版本的形容同步到其他版本</button>
+      <label class="check"><input type="checkbox" id="syncBlank"> 只補空白的，不蓋掉別人已填的</label>
+    </div>
+    <div class="row">
       <button class="btn" id="btnImport" type="button">匯入先前的匯出</button>
       <span class="hint">選擇之前下載的 ZIP 或 sprite-namer.json，版本、名字、格式、順序、形容都會還原，不用重做。</span>
     </div>
@@ -411,6 +415,7 @@ textarea{width:100%;min-height:120px;background:var(--bg);border:1px solid var(-
             <label class="check"><input type="radio" name="cmpItemMode" id="cmpModeCombo" value="combo"> 差分用「組合清單」：每個版本輸出清單裡的組合（<span id="cmpComboCount">0</span> 個）</label>
             <label class="check"><input type="radio" name="cmpItemMode" id="cmpModeAuto" value="auto"> 差分自動展開：標成「分成差分」的圖層組，每個選項各一張（多組會互相搭配）</label>
           </div>
+          <label class="check"><input type="checkbox" id="cmpMerge" checked> 角色名字和版本名稱相同的，併入命名分頁裡既有的版本（不會另開新版本）</label>
           <div class="notice" id="cmpPlan"></div>
           <div class="row">
             <button class="btn primary" id="cmpRun" type="button">合成並送到命名</button>
@@ -1028,6 +1033,26 @@ $('#btnDup').addEventListener('click',()=>{
   el.inVariant.focus();
   msg(keep?'已複製成新版本，連圖片一起帶過來了。在上面填版本名稱後，檔名會自動多一段。':
     '已複製成新版本：格式與 '+g.items.length+' 筆形容都保留，圖片位置是空的。在上面填版本名稱，再上傳新圖，會依檔名順序填進去。');
+});
+/* copy the 形容 of the current version to every other version, matched by position (1st image -> 1st image, ...) */
+$('#btnSyncDesc').addEventListener('click',e=>{
+  const src=cur(),others=groups.filter(g=>g!==src);
+  if(!others.length){msg('只有一個版本，沒有其他版本可以同步。',true);return;}
+  if(!src.items.some(i=>i.desc.trim())){msg('這個版本還沒有填任何形容，沒有東西可以同步。',true);return;}
+  armed(e.currentTarget,'再按一次確認同步',()=>{
+    const blankOnly=$('#syncBlank').checked;let changed=0,short=0;
+    for(const g of others){
+      const n=Math.min(g.items.length,src.items.length);
+      for(let k=0;k<n;k++){
+        const d=src.items[k].desc;
+        if(blankOnly&&g.items[k].desc.trim())continue;
+        if(g.items[k].desc!==d){g.items[k].desc=d;changed++;}
+      }
+      if(g.items.length<src.items.length)short++;
+    }
+    renderAll();
+    msg('已把「'+(src.variant.trim()||src.name.trim()||'這個版本')+'」的形容依順序同步到 '+others.length+' 個版本，共改了 '+changed+' 張'+(blankOnly?'（只補空白）':'')+'。'+(short?' 有 '+short+' 個版本的圖片比這個版本少，多出來的形容沒有用到。':''));
+  });
 });
 $('#btnDelGroup').addEventListener('click',e=>{
   if(groups.length<2)return;
@@ -2094,11 +2119,19 @@ async function fullBmp(l){
 }
 function clearBmpCache(){for(const v of bmpCache.values())if(v.bmp.close)v.bmp.close();bmpCache.clear();bmpBytes=0;}
 
-function pushToNamer(list){
+/* merge=true: a version whose character name and version name match an existing one gets its images added to that version */
+function pushToNamer(list,merge){
   const onlyBlank=groups.length===1&&!groups[0].items.length&&!groups[0].name.trim()&&!groups[0].variant.trim();
   if(onlyBlank)groups.splice(0,1);
-  groups.push(...list);curId=list[0].id;
+  let merged=0,first=null;
+  for(const g of list){
+    const same=merge?groups.find(x=>x.name.trim()===g.name.trim()&&x.variant.trim()===g.variant.trim()):null;
+    if(same){same.items.push(...g.items);merged++;first=first||same;}
+    else{groups.push(g);first=first||g;}
+  }
+  curId=first.id;
   setView('namer');renderAll();
+  return merged;
 }
 async function runCmp(){
   if(cmpBusy)return;
@@ -2139,8 +2172,8 @@ async function runCmp(){
   out=out.filter(g=>g.items.length);
   if(!out.length){cmpMsg(failed?'合成失敗：'+failed:'已停止，沒有產生任何圖片。',true);return;}
   const made=out.reduce((a,g)=>a+g.items.length,0);
-  pushToNamer(out);
-  msg('已從合成分頁送來 '+out.length+' 個版本、'+made+' 張圖片'+(failed?'（中途失敗：'+failed+'）':cmpStop?'（你按了停止，只有一部分）':'')+'。',!!failed||cmpStop);
+  const merged=pushToNamer(out,$('#cmpMerge').checked);
+  msg('已從合成分頁送來 '+out.length+' 個版本、'+made+' 張圖片'+(merged?'（其中 '+merged+' 個版本名稱相同，已併入既有版本）':'')+(failed?'（中途失敗：'+failed+'）':cmpStop?'（你按了停止，只有一部分）':'')+'。',!!failed||cmpStop);
   cmpMsg('完成，已送到命名分頁。');
 }
 cmp.run.addEventListener('click',runCmp);
