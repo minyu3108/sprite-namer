@@ -131,19 +131,6 @@ body.wide .wrap{max-width:1240px}
 .clnone{grid-column:1/-1}
 .clrow .clname{min-width:0;flex:1 1 0;width:auto}
 section.panel,.cgroup{scroll-margin-top:64px}
-.dock{position:fixed;left:50%;transform:translateX(-50%);bottom:12px;z-index:60;width:min(960px,calc(100% - 24px));background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:0 8px 28px rgba(0,0,0,.16)}
-.dockin{display:flex;gap:4px;align-items:center;padding:6px 8px}
-.dockin .btn{white-space:nowrap;min-height:36px;padding:6px 12px;border-radius:10px}
-.dockin .btn:not(.primary){border-color:transparent;background:transparent;color:var(--muted)}
-.dockin .btn:not(.primary):hover{background:var(--bg);color:var(--ink)}
-.dockin .btn.add{color:var(--accent);font-weight:500}
-.dockin .dsep{width:1px;height:20px;background:var(--line);margin:0 4px;flex:none}
-.dockin .dtxt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;color:var(--muted);padding:0 6px}
-.dockmenu{position:fixed;left:50%;transform:translateX(-50%);bottom:68px;z-index:61;width:min(560px,calc(100% - 24px));background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.18);padding:10px;display:flex;flex-wrap:wrap;gap:6px}
-.dockmenu[hidden]{display:none}
-.dockmenu .btn{min-height:36px}
-.dockmenu .dsep{flex-basis:100%;height:0;border-top:1px solid var(--line);margin:2px 0}
-@media(max-width:600px){.dockin .jump{display:none}}
 .clrow,.clnone{display:flex;align-items:center;gap:8px;padding:4px 6px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
 .clnone{color:var(--muted);cursor:pointer}
 .clth{width:56px;height:56px;object-fit:contain;border-radius:4px;background:repeating-conic-gradient(var(--line) 0 25%,transparent 0 50%) 0 0/10px 10px;flex:0 0 auto}
@@ -1397,38 +1384,9 @@ function setView(v){
   $('#tabNamer').classList.toggle('on',v==='namer');$('#tabComp').classList.toggle('on',v==='comp');
   $('#tabNamer').setAttribute('aria-selected',v==='namer');$('#tabComp').setAttribute('aria-selected',v==='comp');
   document.body.classList.toggle('wide',v==='comp');
-  window.scrollTo(0,0);updateDock();
+  window.scrollTo(0,0);
 }
 
-/* bottom dock: jump links + the main action of the current tab, so long pages need less scrolling */
-const dock=document.createElement('div');dock.className='dock';dock.innerHTML='<div class="dockin"></div>';document.body.appendChild(dock);
-let dockTxt=null,dockRun=null;
-const dockMenu=document.createElement('div');dockMenu.className='dockmenu';dockMenu.hidden=true;document.body.appendChild(dockMenu);
-[['＋ 身體','cmpAddBody'],['＋ 衣服','cmpAddCloth'],['＋ 眼睛','cmpAddEye'],['＋ 眉毛','cmpAddBrow'],['＋ 嘴','cmpAddMouth'],['＋ 表情（整張）','cmpAddFace'],['＋ 配件（多選）','cmpAddAcc'],['＋ 空白','cmpAddBlank'],['|'],['匯入 PSD','cmpAddPsd'],['載入範例','cmpSample']].forEach(([t,id])=>{
-  if(t==='|'){const d=document.createElement('div');d.className='dsep';dockMenu.appendChild(d);return;}
-  const b=document.createElement('button');b.type='button';b.className='btn';b.textContent=t;
-  b.addEventListener('click',()=>{dockMenu.hidden=true;document.getElementById(id).click();});dockMenu.appendChild(b);
-});
-document.addEventListener('pointerdown',e=>{if(!dockMenu.hidden&&!dockMenu.contains(e.target)&&!e.target.closest('.dock'))dockMenu.hidden=true;});
-function jumpTo(sel){const el=document.querySelector(sel);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
-function syncDock(){
-  if(dockTxt&&cmp.plan)dockTxt.textContent=cmp.plan.textContent;
-  if(dockRun)dockRun.disabled=cmp.run.disabled;
-}
-function updateDock(){
-  const box=dock.firstChild;box.innerHTML='';dockTxt=dockRun=null;dockMenu.hidden=true;
-  const btn=(t,fn,cls)=>{const b=document.createElement('button');b.type='button';b.className='btn'+(cls?' '+cls:'');b.textContent=t;b.addEventListener('click',fn);box.appendChild(b);return b;};
-  const sp=()=>{const d=document.createElement('span');d.className='dtxt';box.appendChild(d);return d;};
-  if(activeView==='namer'){
-    [['1 角色','角色與版本'],['2 圖片','圖片'],['3 格式','檔名格式'],['4 下載','匯出']].forEach(([t,a])=>btn(t,()=>jumpTo('#viewNamer section[aria-label="'+a+'"]'),'jump'));
-    sp();btn('下載此版本 ZIP',()=>$('#btnZip').click(),'primary');
-  }else{
-    btn('＋ 新增',()=>{dockMenu.hidden=!dockMenu.hidden;},'add');
-    const d0=document.createElement('span');d0.className='dsep jump';box.appendChild(d0);
-    [['圖層組','#cmpGroups'],['組合清單','#viewComp section[aria-label="組合清單"]'],['輸出','#viewComp section[aria-label="輸出"]']].forEach(([t,q])=>btn(t,()=>jumpTo(q),'jump'));
-    dockTxt=sp();dockRun=btn('合成並送到命名',()=>cmp.run.click(),'primary');syncDock();
-  }
-}
 $('#tabNamer').addEventListener('click',()=>setView('namer'));
 $('#tabComp').addEventListener('click',()=>{setView('comp');drawPv();});
 
@@ -2031,7 +1989,7 @@ function renderPlan(){
     if(off)txt+=' ⚠ 有 '+off+' 個圖層尺寸和第一張不同。';
   }
   el.textContent=txt;el.className='notice'+(bad?' warn':'');
-  cmp.run.disabled=bad||cmpBusy;syncDock();
+  cmp.run.disabled=bad||cmpBusy;
 }
 document.querySelectorAll('input[name=cmpItemMode]').forEach(r=>r.addEventListener('change',e=>{comp.itemMode=e.target.value;renderPlan();}));
 
@@ -2183,7 +2141,7 @@ cmp.stop.addEventListener('click',()=>{cmpStop=true;cmpMsg('停止中…');});
 try{if(window.top===window.self)$('#extLink').target='_blank';}catch(_){}
 
 /* ---------- init ---------- */
-renderPalette();renderAll();renderComp();renderCombos();updateDock();
+renderPalette();renderAll();renderComp();renderCombos();
 </script>
 </body>
 </html>
