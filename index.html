@@ -11,31 +11,41 @@
 <style>
 /* Layout idea: one working column. Top: sets (tabs). Middle: name format blocks. Bottom: image cards you reorder, then export. */
 :root{
-  --bg:#f3f4f7; --panel:#ffffff; --ink:#1b2230; --muted:#667085; --line:#dde1e9;
-  --accent:#2c56d6; --accent-ink:#ffffff; --warn:#c2410c; --warn-bg:#fff1e6;
+  --bg:#eff7f6; --panel:#fcffff; --ink:#1d3036; --muted:#56767a; --line:#bddbd8;
+  --accent:#6a5fd0; --accent-ink:#ffffff; --warn:#a46d10; --warn-bg:#fbf0dc;
   --chip-l-bg:92%; --chip-l-ink:28%; --chip-s:75%;
   --font:"Noto Sans TC",system-ui,-apple-system,"Segoe UI","PingFang TC","Microsoft JhengHei",sans-serif;
   --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Noto Sans TC",monospace;
+  --glow:radial-gradient(900px 520px at 88% -8%,rgba(140,120,235,.26),transparent 62%),radial-gradient(760px 520px at 4% 108%,rgba(110,215,180,.28),transparent 62%);
+  --ring:rgba(106,95,208,.3);
   color-scheme:light;
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
-    --bg:#11151c; --panel:#1a2029; --ink:#e7ebf2; --muted:#9aa4b5; --line:#2c3543;
-    --accent:#7ea3ff; --accent-ink:#0f1623; --warn:#fdba74; --warn-bg:#3a2415;
+    --bg:#17131d; --panel:#221c2b; --ink:#f6eddc; --muted:#baabbd; --line:#3f344d;
+    --accent:#f4bf5a; --accent-ink:#1f1606; --warn:#ffd36b; --warn-bg:#3a2a15;
+    --glow:radial-gradient(900px 520px at 88% -8%,rgba(244,191,90,.17),transparent 62%),radial-gradient(760px 520px at 4% 108%,rgba(165,110,210,.15),transparent 62%);
+    --ring:rgba(244,191,90,.3);
     --chip-l-bg:24%; --chip-l-ink:86%; --chip-s:35%;
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-  --bg:#11151c; --panel:#1a2029; --ink:#e7ebf2; --muted:#9aa4b5; --line:#2c3543;
-  --accent:#7ea3ff; --accent-ink:#0f1623; --warn:#fdba74; --warn-bg:#3a2415;
+  --bg:#17131d; --panel:#221c2b; --ink:#f6eddc; --muted:#baabbd; --line:#3f344d;
+  --accent:#f4bf5a; --accent-ink:#1f1606; --warn:#ffd36b; --warn-bg:#3a2a15;
+  --glow:radial-gradient(900px 520px at 88% -8%,rgba(244,191,90,.17),transparent 62%),radial-gradient(760px 520px at 4% 108%,rgba(165,110,210,.15),transparent 62%);
+  --ring:rgba(244,191,90,.3);
   --chip-l-bg:24%; --chip-l-ink:86%; --chip-s:35%;
   color-scheme:dark;
 }
 *{box-sizing:border-box}
+.toolbtns{position:absolute;top:20px;right:16px;z-index:60;display:flex;gap:6px}
+.themebtn{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer;font:inherit;font-size:13px;min-height:36px}
+.themebtn:hover{border-color:var(--accent)}
+input:focus,textarea:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--ring);outline:none}
 html,body{margin:0}
-body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.55;-webkit-text-size-adjust:100%}
-.wrap{max-width:980px;margin:0 auto;padding:20px 16px 84px;display:flex;flex-direction:column;gap:16px}
+body{background-color:var(--bg);background-image:var(--glow);background-attachment:fixed;color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.55;-webkit-text-size-adjust:100%}
+.wrap{position:relative;z-index:1;max-width:980px;margin:0 auto;padding:20px 16px 84px;display:flex;flex-direction:column;gap:16px}
 h1{font-size:22px;margin:0;letter-spacing:.02em;text-wrap:balance}
 h2{font-size:15px;margin:0;font-weight:700}
 .sub{color:var(--muted);margin:4px 0 0;font-size:14px}
@@ -153,7 +163,7 @@ section.panel,.cgroup{scroll-margin-top:64px}
 .cmbth{width:56px;height:84px;object-fit:contain;border-radius:6px;flex:0 0 auto;background:repeating-conic-gradient(var(--line) 0 25%,transparent 0 50%) 0 0/10px 10px}
 .cmbname{flex:1 1 140px;min-width:0}
 .cmbrow .btn{min-height:34px;padding:5px 10px}
-.vbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:10px;margin:0 -16px;padding:8px 16px;background:var(--bg);border-bottom:1px solid var(--line)}
+.vbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:10px;margin:0 -16px;padding:8px 16px;background:color-mix(in srgb,var(--bg) 88%,transparent);border-bottom:1px solid var(--line)}
 .vlabel{font-weight:700;font-size:13px;color:var(--muted);flex:0 0 auto}
 .tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;flex:1 1 0;min-width:0}
 .tab{flex:0 0 auto;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:6px 12px;cursor:pointer;white-space:nowrap}
@@ -210,6 +220,28 @@ textarea{width:100%;min-height:120px;background:var(--bg);border:1px solid var(-
 .mname{font-family:var(--mono);font-size:13px;word-break:break-all;background:var(--bg);border-radius:8px;padding:8px 10px}
 .mnav{display:flex;gap:8px}
 .mnav .btn{flex:1}
+/* preview backdrop switch: checker / white / black / gray / green, applied to every transparent-image preview */
+.pvbgs{display:flex;align-items:center;gap:4px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.pvbgs button{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:3px 10px;cursor:pointer;font:inherit;font-size:12px;min-height:28px}
+.pvbgs button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.pvbgs i{display:inline-block;width:10px;height:10px;border-radius:50%;border:1px solid #8888;margin-right:4px;vertical-align:-1px}
+:root{--pvc:none}
+body[data-pv="w"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbimg-x){background:#fff}
+body[data-pv="k"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbimg-x){background:#141414}
+body[data-pv="g"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbimg-x){background:#808080}
+body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbimg-x){background:#2fd27a}
+.cpv canvas{cursor:zoom-in;max-width:100%;height:auto}
+.lbmodal{z-index:520;background:rgba(8,8,12,.82);flex-direction:column;gap:10px}
+.lbbar{display:flex;gap:10px;align-items:center;justify-content:space-between;width:min(1200px,100%);flex-wrap:wrap}
+.lbbar .pvbgs{color:#ddd}
+.lbmodal{align-items:center}
+.lbimg{position:relative;border-radius:10px;width:min(1200px,100%);flex:1 1 auto;min-height:0;overflow:hidden;touch-action:none}
+.lbimg canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab;user-select:none}
+.lbimg.drag canvas{cursor:grabbing}
+.lbzoom{display:flex;gap:4px;align-items:center}
+.lbzoom .btn{min-height:32px;padding:3px 10px}
+.clth{cursor:zoom-in}
+.lbinfo{color:#ddd;font-size:12px}
 @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 
 /* auto-naming advanced row */
@@ -233,7 +265,9 @@ textarea{width:100%;min-height:120px;background:var(--bg);border:1px solid var(-
 </style>
 </head>
 <body>
+<canvas id="fx" aria-hidden="true" style="position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none"></canvas>
 <div class="wrap">
+  <div class="toolbtns"><button class="themebtn" id="fxBtn" type="button" title="背景動畫開／關"></button><button class="themebtn" id="themeBtn" type="button" title="切換亮／暗模式"></button></div>
   <header>
     <h1>立繪差分命名器</h1>
     <p class="sub">替立繪差分圖批量加上名字與編號，也能把分開的圖層合成各種差分。圖片只在你的瀏覽器內處理，不會上傳。</p>
@@ -384,8 +418,10 @@ textarea{width:100%;min-height:120px;background:var(--bg);border:1px solid var(-
           <div class="cgroups" id="cmpGroups"></div>
           <aside class="comppv" aria-label="預覽">
             <strong>預覽</strong>
-            <div class="cpv"><canvas id="cmpPv" width="1" height="1"></canvas></div>
+            <div class="pvbgs" role="group" aria-label="預覽底色"><span>底色</span><button type="button" data-pv=""><i style="background:repeating-conic-gradient(#999 0 25%,#fff 0 50%) 0 0/6px 6px"></i>棋盤</button><button type="button" data-pv="w"><i style="background:#fff"></i>白</button><button type="button" data-pv="k"><i style="background:#141414"></i>黑</button><button type="button" data-pv="g"><i style="background:#808080"></i>灰</button><button type="button" data-pv="e"><i style="background:#2fd27a"></i>綠</button></div>
+            <div class="cpv" title="點一下看大圖"><canvas id="cmpPv" width="1" height="1"></canvas></div>
             <div class="hint" id="cmpPvInfo"></div>
+            <button class="btn" id="cmpPvBig" type="button">看大圖</button>
           </aside>
         </div>
         <section class="panel" aria-label="組合清單">
@@ -429,6 +465,15 @@ textarea{width:100%;min-height:120px;background:var(--bg);border:1px solid var(-
   </footer>
 </div>
 
+<div class="modal lbmodal" id="pvModal" hidden role="dialog" aria-modal="true" aria-label="合成預覽大圖">
+  <div class="lbbar">
+    <div class="pvbgs" role="group" aria-label="預覽底色"><span>底色</span><button type="button" data-pv=""><i style="background:repeating-conic-gradient(#999 0 25%,#fff 0 50%) 0 0/6px 6px"></i>棋盤</button><button type="button" data-pv="w"><i style="background:#fff"></i>白</button><button type="button" data-pv="k"><i style="background:#141414"></i>黑</button><button type="button" data-pv="g"><i style="background:#808080"></i>灰</button><button type="button" data-pv="e"><i style="background:#2fd27a"></i>綠</button></div>
+    <span class="lbzoom"><button class="btn" id="lbOut" type="button" aria-label="縮小">－</button><button class="btn" id="lbFit" type="button">符合畫面</button><button class="btn" id="lbIn" type="button" aria-label="放大">＋</button></span>
+    <span class="lbinfo" id="lbInfo"></span>
+    <button class="btn" id="lbClose" type="button">關閉</button>
+  </div>
+  <div class="lbimg" id="lbImg"><canvas id="lbCv" width="1" height="1"></canvas></div>
+</div>
 <div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="mPos">
   <div class="mbox">
     <div class="mhead"><span id="mPos"></span><button class="btn" id="mClose" type="button">完成</button></div>
@@ -1471,7 +1516,7 @@ function groupEl(g){
     sel.type=g.mode==='single'?'radio':'checkbox';
     sel.checked=g.mode==='single'?g.sel===l.id:l.on;
     sel.setAttribute('aria-label','使用 '+l.name);
-    const th=document.createElement('img');th.className='clth';th.alt='';th.src=l.th;
+    const th=document.createElement('img');th.className='clth';th.alt='';th.title='點一下看大圖';th.src=l.th;
     const nm=document.createElement('input');nm.type='text';nm.className='clname';nm.value=l.name;nm.setAttribute('aria-label','圖層名稱');nm.autocomplete='off';
     const x=document.createElement('button');x.type='button';x.className='xbtn lx';x.setAttribute('aria-label','刪除這個圖層');x.textContent='×';
     row.append(grip,sel,th,nm);
@@ -2142,6 +2187,236 @@ try{if(window.top===window.self)$('#extLink').target='_blank';}catch(_){}
 
 /* ---------- init ---------- */
 renderPalette();renderAll();renderComp();renderCombos();
+function startFx(cv,cfg){
+  var ctx=cv.getContext('2d'),W=0,H=0,ps=[],raf=0,last=0,T=0,TAU=Math.PI*2,alive=true;
+  var still=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function rnd(a,b){return a+Math.random()*(b-a)}
+  function mk(){
+    var k=cfg.kind,fall=(k==='petal'||k==='leaf'||k==='snow'),rise=(k==='bubble');
+    return {x:rnd(0,W),y:rnd(0,H),r:rnd(cfg.rMin,cfg.rMax),
+      c:cfg.colors[Math.floor(Math.random()*cfg.colors.length)],a:rnd(.45,1),
+      p1:rnd(0,TAU),p2:rnd(0,TAU),p3:rnd(0,TAU),f1:rnd(.12,.5),f2:rnd(.08,.35),tw:rnd(.5,1.8),
+      vx:fall?rnd(-5,8):rnd(-3,3),vy:fall?rnd(12,30):(rise?-rnd(8,22):rnd(-3,3)),
+      sw:(fall||rise)?rnd(8,22):rnd(4,10),rot:rnd(0,TAU),vr:rnd(-.9,.9),gone:0,fade:1};
+  }
+  function fit(){
+    var d=Math.min(window.devicePixelRatio||1,2);
+    W=cv.clientWidth;H=cv.clientHeight;cv.width=Math.round(W*d);cv.height=Math.round(H*d);ctx.setTransform(d,0,0,d,0,0);
+  }
+  function fill(){
+    var n=Math.max(12,Math.round(cfg.count*Math.max(.35,Math.min(1.2,W*H/1024000))));
+    ps=[];for(var i=0;i<n;i++)ps.push(mk());
+  }
+  function draw(p){
+    var k=cfg.kind;ctx.globalAlpha=1;
+    if(k==='star'||k==='mote'){
+      var tw=.5+.5*Math.sin(T*p.tw+p.p3),al=p.a*(.25+.75*tw);
+      ctx.fillStyle=p.c;
+      if(k==='mote'||p.r>1.1){ctx.globalAlpha=al*.16;ctx.beginPath();ctx.arc(p.x,p.y,p.r*3.2,0,TAU);ctx.fill()}
+      ctx.globalAlpha=al;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,TAU);ctx.fill();
+      if(k==='star'&&p.r>1.25){
+        var L=p.r*4*tw+2;ctx.globalAlpha=al*.55;ctx.strokeStyle=p.c;ctx.lineWidth=.6;ctx.beginPath();
+        ctx.moveTo(p.x-L,p.y);ctx.lineTo(p.x+L,p.y);ctx.moveTo(p.x,p.y-L);ctx.lineTo(p.x,p.y+L);ctx.stroke();
+      }
+      return;
+    }
+    ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);ctx.globalAlpha=p.a*.85;
+    if(k==='petal'){
+      ctx.scale(1,.55+.45*Math.abs(Math.sin(T*p.tw+p.p3)));ctx.fillStyle=p.c;
+      ctx.beginPath();ctx.ellipse(0,0,p.r*1.5,p.r*.9,0,0,TAU);ctx.fill();
+    }else if(k==='leaf'){
+      ctx.scale(1,.6+.4*Math.abs(Math.sin(T*p.tw+p.p3)));ctx.fillStyle=p.c;
+      ctx.beginPath();ctx.ellipse(0,0,p.r*1.7,p.r*.8,0,0,TAU);ctx.fill();
+      ctx.strokeStyle='rgba(0,0,0,.18)';ctx.lineWidth=.6;ctx.beginPath();ctx.moveTo(-p.r*1.7,0);ctx.lineTo(p.r*1.7,0);ctx.stroke();
+    }else if(k==='snow'){
+      ctx.beginPath();ctx.arc(0,0,p.r*.7,0,TAU);ctx.fillStyle=p.c;ctx.fill();
+      ctx.strokeStyle=cfg.stroke||'rgba(120,150,190,.45)';ctx.lineWidth=.8;ctx.stroke();
+    }else if(k==='bubble'){
+      ctx.beginPath();ctx.arc(0,0,p.r,0,TAU);ctx.fillStyle=p.c;ctx.globalAlpha=p.a*.12;ctx.fill();
+      ctx.globalAlpha=p.a*.7;ctx.strokeStyle=p.c;ctx.lineWidth=1;ctx.stroke();
+      ctx.beginPath();ctx.arc(-p.r*.35,-p.r*.35,p.r*.22,0,TAU);ctx.fillStyle='#fff';ctx.globalAlpha=.7;ctx.fill();
+    }
+    ctx.restore();
+  }
+  function paint(){
+    ctx.clearRect(0,0,W,H);
+    for(var i=0;i<ps.length;i++){
+      var p=ps[i];if(p.gone>0)continue;
+      if(p.fade<1){var a0=p.a;p.a=a0*p.fade;draw(p);p.a=a0}else draw(p);
+    }
+    for(var j=pops.length-1;j>=0;j--){
+      var o=pops[j],u=o.t/.4;if(u>=1){pops.splice(j,1);continue}
+      ctx.globalAlpha=(1-u)*.8;ctx.strokeStyle=o.c;ctx.lineWidth=1.4;ctx.beginPath();ctx.arc(o.x,o.y,o.r+u*16,0,TAU);ctx.stroke();
+      ctx.globalAlpha=(1-u)*.9;ctx.fillStyle=o.c;
+      for(var k=0;k<6;k++){var an=k*TAU/6+o.t*2,rr=o.r+u*22;ctx.beginPath();ctx.arc(o.x+Math.cos(an)*rr,o.y+Math.sin(an)*rr,1.3*(1-u),0,TAU);ctx.fill()}
+    }
+    ctx.globalAlpha=1;
+  }
+  function frame(now){
+    if(!alive)return;raf=requestAnimationFrame(frame);
+    var dt=Math.min(.05,((now-last)/1000)||0),s=cfg.speed||1;last=now;T+=dt;
+    for(var i=0;i<ps.length;i++){
+      var p=ps[i];
+      if(p.gone>0){p.gone-=dt;if(p.gone<=0){p.x=rnd(0,W);p.y=rnd(0,H);p.fade=0}continue}
+      if(p.fade<1)p.fade=Math.min(1,p.fade+dt/1.2);
+      p.x+=(p.vx*s+Math.sin(T*p.f1+p.p1)*p.sw)*dt;
+      p.y+=(p.vy*s+Math.cos(T*p.f2+p.p2)*p.sw*.6)*dt;
+      p.rot+=p.vr*dt;
+      if(p.x<-12)p.x=W+12;else if(p.x>W+12)p.x=-12;
+      if(p.y<-12)p.y=H+12;else if(p.y>H+12)p.y=-12;
+    }
+    for(var q=0;q<pops.length;q++)pops[q].t+=dt;
+    paint();
+  }
+  function onResize(){var w=cv.clientWidth;fit();if(w!==W||!ps.length)fill();if(still)paint()}
+  var pops=[];
+  /* click a particle (generous hit area) and it pops; it comes back a few seconds later somewhere else */
+  function onDown(e){
+    if(still||(e.target.closest&&e.target.closest('button,input,select,textarea,a,summary,label,.modal')))return;
+    for(var i=0;i<ps.length;i++){var p=ps[i];if(p.gone>0||p.fade<.5)continue;
+      var dx=p.x-e.clientX,dy=p.y-e.clientY,h=Math.max(30,p.r*8);
+      if(dx*dx+dy*dy<h*h){p.gone=rnd(4,8);pops.push({x:p.x,y:p.y,r:p.r*1.6,t:0,c:p.c});}}
+  }
+  if(!still)window.addEventListener('pointerdown',onDown,{passive:true});
+  fit();fill();
+  window.addEventListener('resize',onResize);
+  if(still)paint();else raf=requestAnimationFrame(frame);
+  return function(){alive=false;cancelAnimationFrame(raf);window.removeEventListener('resize',onResize);window.removeEventListener('pointerdown',onDown);ctx.clearRect(0,0,W,H)};
+}
+
+/* preview backdrop + big view of the composed preview */
+function setPvBg(v){
+  if(v)document.body.dataset.pv=v;else delete document.body.dataset.pv;
+  document.querySelectorAll('.pvbgs button').forEach(b=>b.classList.toggle('on',b.dataset.pv===(v||'')));
+  try{localStorage.setItem('spriteNamerPvBg',v||'');}catch(_){}
+}
+document.querySelectorAll('.pvbgs button').forEach(b=>b.addEventListener('click',()=>setPvBg(b.dataset.pv)));
+let pvInit='';try{pvInit=localStorage.getItem('spriteNamerPvBg')||'';}catch(_){}
+setPvBg(['w','k','g','e'].includes(pvInit)?pvInit:'');
+const lb={modal:$('#pvModal'),cv:$('#lbCv'),box:$('#lbImg'),info:$('#lbInfo'),src:null,sw:1,sh:1,z:1,ox:0,oy:0,W:1,H:1,note:'',pat:null};
+/* The image is drawn into a viewport-sized canvas (zoom/pan by redrawing), so huge zoom never makes a huge element. */
+function lbFit(){return Math.min(lb.W/lb.sw,lb.H/lb.sh);}
+function lbClamp(){
+  const s=lbFit()*lb.z,dw=lb.sw*s,dh=lb.sh*s;
+  lb.ox=dw<=lb.W?(lb.W-dw)/2:Math.min(0,Math.max(lb.W-dw,lb.ox));
+  lb.oy=dh<=lb.H?(lb.H-dh)/2:Math.min(0,Math.max(lb.H-dh,lb.oy));
+}
+function lbSize(){
+  const d=Math.min(window.devicePixelRatio||1,2),r=lb.box.getBoundingClientRect();
+  lb.W=Math.max(1,r.width);lb.H=Math.max(1,r.height);
+  lb.cv.width=Math.round(lb.W*d);lb.cv.height=Math.round(lb.H*d);lb.d=d;
+}
+function lbBg(ctx,x,y,w,h){
+  const m=document.body.dataset.pv||'',col={w:'#fff',k:'#141414',g:'#808080',e:'#2fd27a'}[m];
+  if(col){ctx.fillStyle=col;ctx.fillRect(x,y,w,h);return;}
+  if(!lb.pat){const c=document.createElement('canvas');c.width=c.height=32;const t=c.getContext('2d');t.fillStyle='#b9b9b9';t.fillRect(0,0,32,32);t.fillStyle='#8d8d8d';t.fillRect(0,0,16,16);t.fillRect(16,16,16,16);lb.pat=ctx.createPattern(c,'repeat');}
+  ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();ctx.fillStyle=lb.pat;ctx.fillRect(x,y,w,h);ctx.restore();
+}
+function lbDraw(){
+  if(!lb.src||lb.modal.hidden)return;
+  const ctx=lb.cv.getContext('2d'),s=lbFit()*lb.z;
+  ctx.setTransform(lb.d,0,0,lb.d,0,0);ctx.clearRect(0,0,lb.W,lb.H);
+  const dw=lb.sw*s,dh=lb.sh*s;
+  lbBg(ctx,lb.ox,lb.oy,dw,dh);
+  ctx.imageSmoothingEnabled=s<3;ctx.imageSmoothingQuality='high';
+  ctx.drawImage(lb.src,lb.ox,lb.oy,dw,dh);
+  lb.info.textContent=lb.note+'　滾輪縮放、拖曳移動、雙擊還原（'+Math.round(lb.z*100)+'%）';
+}
+function lbZoomAt(f,cx,cy){
+  const z=Math.max(1,Math.min(40,lb.z*f));if(z===lb.z)return;
+  const k=z/lb.z;
+  lb.ox=cx-(cx-lb.ox)*k;lb.oy=cy-(cy-lb.oy)*k;lb.z=z;lbClamp();lbDraw();
+}
+function lbReset(){lb.z=1;lbClamp();lbDraw();}
+function lbShow(src,w,h,note){
+  lb.src=src;lb.sw=w;lb.sh=h;lb.note=note;lb.z=1;lbSize();lbClamp();lbDraw();
+}
+async function openBig(){
+  const d=cmpDims();
+  if(!d){cmpMsg('還沒有圖層，沒有可以放大的預覽。',true);return;}
+  lb.modal.hidden=false;lb.src=null;lb.info.textContent='繪製中…';
+  const sc=Math.min(1,4096/Math.max(d.w,d.h));
+  const w=Math.max(1,Math.round(d.w*sc)),h=Math.max(1,Math.round(d.h*sc));
+  const cv=document.createElement('canvas');cv.width=w;cv.height=h;const ctx=cv.getContext('2d');
+  const ids=new Set();comp.groups.forEach(g=>curSel(g).forEach(id=>ids.add(id)));
+  try{for(const l of layersInOrder(ids))ctx.drawImage(await fullBmp(l),0,0,w,h);}
+  catch(_){for(const l of layersInOrder(ids))ctx.drawImage(l.prev,0,0,w,h);}
+  if(lb.modal.hidden)return;
+  lbShow(cv,w,h,'組合預覽 '+d.w+'×'+d.h+' px'+(sc<1?'（縮小顯示）':''));
+}
+async function openLayerBig(l){
+  lb.modal.hidden=false;lb.src=null;lb.info.textContent='讀取中…';
+  let src;
+  try{src=await fullBmp(l);}catch(_){src=l.prev;}
+  if(lb.modal.hidden)return;
+  lbShow(src,src.width||l.w,src.height||l.h,'圖層「'+(l.name||'未命名')+'」'+l.w+'×'+l.h+' px');
+}
+function closeBig(){lb.modal.hidden=true;lb.src=null;}
+cmp.pv.addEventListener('click',openBig);
+$('#cmpPvBig').addEventListener('click',openBig);
+$('#lbClose').addEventListener('click',closeBig);
+$('#lbIn').addEventListener('click',()=>lbZoomAt(1.4,lb.W/2,lb.H/2));
+$('#lbOut').addEventListener('click',()=>lbZoomAt(1/1.4,lb.W/2,lb.H/2));
+$('#lbFit').addEventListener('click',lbReset);
+lb.modal.addEventListener('pointerdown',e=>{if(e.target===lb.modal)closeBig();});
+const lbPt=e=>{const r=lb.box.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top};};
+lb.box.addEventListener('wheel',e=>{e.preventDefault();const p=lbPt(e);lbZoomAt(Math.exp(-e.deltaY*(e.deltaMode===1?0.05:0.0015)),p.x,p.y);},{passive:false});
+lb.box.addEventListener('dblclick',lbReset);
+let lbDrag=null;
+lb.box.addEventListener('pointerdown',e=>{
+  const p=lbPt(e),s=lbFit()*lb.z;
+  const inside=p.x>=lb.ox&&p.x<=lb.ox+lb.sw*s&&p.y>=lb.oy&&p.y<=lb.oy+lb.sh*s;
+  lbDrag={out:!inside,x:e.clientX,y:e.clientY,ox:lb.ox,oy:lb.oy};lb.box.classList.add('drag');
+  try{lb.box.setPointerCapture(e.pointerId);}catch(_){}
+});
+lb.box.addEventListener('pointermove',e=>{if(!lbDrag)return;lb.ox=lbDrag.ox+(e.clientX-lbDrag.x);lb.oy=lbDrag.oy+(e.clientY-lbDrag.y);lbClamp();lbDraw();});
+lb.box.addEventListener('pointerup',e=>{if(lbDrag&&lbDrag.out&&Math.abs(e.clientX-lbDrag.x)<5&&Math.abs(e.clientY-lbDrag.y)<5)closeBig();});
+const lbEnd=()=>{lbDrag=null;lb.box.classList.remove('drag');};
+lb.box.addEventListener('pointerup',lbEnd);lb.box.addEventListener('pointercancel',lbEnd);
+window.addEventListener('resize',()=>{if(!lb.modal.hidden&&lb.src){lbSize();lbClamp();lbDraw();}});
+window.addEventListener('keydown',e=>{if(lb.modal.hidden)return;if(e.key==='Escape')closeBig();else if(e.key==='+'||e.key==='=')lbZoomAt(1.4,lb.W/2,lb.H/2);else if(e.key==='-')lbZoomAt(1/1.4,lb.W/2,lb.H/2);});
+document.querySelectorAll('.pvbgs button').forEach(b=>b.addEventListener('click',lbDraw));
+/* click a layer thumbnail to look at that layer alone */
+cmp.groups.addEventListener('click',e=>{
+  const th=e.target.closest('.clth');if(!th)return;
+  const row=th.closest('.clrow');if(!row)return;
+  for(const g of comp.groups){const l=g.layers.find(x=>x.id===row.dataset.id);if(l){openLayerBig(l);return;}}
+});
+
+/* ---------- theme (light / dark) + background particles ---------- */
+const FX={
+  dark:{"kind":"star","colors":["#fff3cf","#ffd98a","#ffe9b8","#f2d2ff"],"count":90,"rMin":0.4,"rMax":1.5,"speed":1},
+  light:{"kind":"snow","colors":["#ffffff","#f1eaff"],"stroke":"rgba(120,130,200,.45)","count":46,"rMin":2,"rMax":4.2,"speed":1}
+};
+let stopFx=null,fxMode='';
+const darkMq=window.matchMedia?matchMedia('(prefers-color-scheme: dark)'):null;
+function curTheme(){const t=document.documentElement.dataset.theme;return t||(darkMq&&darkMq.matches?'dark':'light');}
+let fxOn=true;
+try{fxOn=localStorage.getItem('spriteNamerFx')!=='off';}catch(_){}
+function syncTheme(force){
+  const m=curTheme();
+  $('#themeBtn').textContent=m==='dark'?'☀ 亮模式':'🌙 暗模式';
+  $('#fxBtn').textContent=fxOn?'✨ 動畫：開':'動畫：關';
+  $('#fxBtn').setAttribute('aria-pressed',fxOn);
+  if(!force&&m===fxMode)return;
+  fxMode=m;if(stopFx){stopFx();stopFx=null;}
+  if(!fxOn)return;
+  try{stopFx=startFx(document.getElementById('fx'),FX[m]);}catch(_){}
+}
+$('#fxBtn').addEventListener('click',()=>{
+  fxOn=!fxOn;
+  try{localStorage.setItem('spriteNamerFx',fxOn?'on':'off');}catch(_){}
+  syncTheme(true);
+});
+try{const t=localStorage.getItem('spriteNamerTheme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;}catch(_){}
+$('#themeBtn').addEventListener('click',()=>{
+  const n=curTheme()==='dark'?'light':'dark';
+  document.documentElement.dataset.theme=n;
+  try{localStorage.setItem('spriteNamerTheme',n);}catch(_){}
+  syncTheme();
+});
+if(darkMq&&darkMq.addEventListener)darkMq.addEventListener('change',()=>syncTheme());
+syncTheme();
 </script>
 </body>
 </html>
