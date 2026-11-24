@@ -291,7 +291,7 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
   <div class="toolbtns"><button class="themebtn" id="styleBtn" type="button" title="簡潔配色（單色、無背景動畫）"></button><button class="themebtn" id="fxBtn" type="button" title="背景動畫開／關"></button><button class="themebtn" id="themeBtn" type="button" title="切換亮／暗模式"></button></div>
   <header>
     <h1>立繪差分命名器</h1>
-    <p class="sub">替立繪差分圖批量加上名字與編號，也能把分開的圖層合成各種差分。圖片只在你的瀏覽器內處理，不會上傳。</p>
+    <p class="sub">替立繪差分圖批量加上名字與編號，也能把分開的圖層合成各種差分。支援直接拖入：圖片檔、.zip、.json、.psd。</p>
     <div class="seg" role="tablist" aria-label="功能">
       <button class="segb on" id="tabNamer" type="button" role="tab" aria-selected="true">命名</button>
       <button class="segb" id="tabComp" type="button" role="tab" aria-selected="false">合成差分</button>
@@ -318,14 +318,14 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
     </div>
     <div class="row">
       <button class="btn" id="btnSyncDesc" type="button">把這個版本的形容同步到其他版本</button>
-      <label class="check"><input type="checkbox" id="syncBlank"> 只補空白的，不蓋掉別人已填的</label>
+      <label class="check"><input type="checkbox" id="syncBlank"> 只補空白的，不蓋掉已填的</label>
     </div>
     <div class="row">
       <button class="btn" id="btnImport" type="button">匯入先前的匯出</button>
-      <span class="hint">選擇之前下載的 ZIP 或 sprite-namer.json，版本、名字、格式、順序、形容都會還原，不用重做。</span>
+      <span class="hint">選擇之前下載的 ZIP 或 sprite-namer.json，版本、名字、格式、順序、形容都會還原。</span>
     </div>
     <input type="file" id="fileImport" accept=".zip,.json,application/zip,application/json,image/*" multiple hidden>
-    <p class="hint">同一個角色可以有好幾個版本，例如「本體」和「戴帽子」，每個版本放自己的一批圖。切換版本請用最上方那一列，往下捲動時它會固定在畫面上，隨時都能切。只有一個版本的話，可以直接跳到第 2 步。<br>要做戴帽子版：按「複製成新版本」，原本每張的形容會留著、圖片位置會清空，在上面的欄位填「帽子」，再把戴帽子的圖放進來就完成了。</p>
+    <p class="hint">同一個角色可以有好幾個版本，例如「本體」和「戴帽子」，每個版本放自己的一批圖。只有一個版本的話，可以直接跳到第 2 步。</p>
   </section>
 
   <section class="panel" aria-label="圖片">
@@ -336,12 +336,12 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
         <button class="btn" id="btnTag" type="button">逐張輸入形容</button>
       </div>
     </div>
-    <p class="hint">也可以直接把圖片拖進頁面。拖曳卡片上方的條列來改順序，編號會即時變動；點圖片可放大並輸入形容。</p>
+    <p class="hint">拖曳卡片上方的條列來改順序，編號會即時變動；點圖片可放大並輸入形容。</p>
     <div class="row">
       <label class="check"><input type="checkbox" id="optDesc" checked> 加入圖片時，從檔名偵測形容</label>
       <label class="check"><input type="checkbox" id="optName" checked> 角色名字是空的時，從檔名偵測名字</label>
     </div>
-    <p class="hint">偵測會讀「名字 (1)形容」「名字_01_形容」這類檔名，編號後面的文字當作形容。已經有形容的空位不會被覆蓋，之後都能再手動修改。</p>
+    <p class="hint">偵測會自動讀編號後面的文字當作形容。</p>
     <input type="file" id="file" accept="image/*" multiple hidden>
     <div class="grid" id="grid"></div>
     <div class="row">
@@ -368,7 +368,6 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
   <section class="panel" aria-label="檔名格式">
     <h2><span class="step">3</span>檔名格式</h2>
     <div class="preview" id="preview"></div>
-    <p class="hint">下面的方塊就是檔名的組成，拖曳可以換順序。內容是空的方塊（例如沒填形容）會連旁邊的分隔符一起省略，不會留下多餘空格。</p>
     <div class="tokens" id="tokens" aria-label="目前格式"></div>
     <div class="pal" id="pal" aria-label="加入方塊"></div>
     <div class="fields">
@@ -414,18 +413,9 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
         <label class="f" for="cmpName">角色名字（送到命名時使用，可留空）<input type="text" id="cmpName" autocomplete="off" placeholder="例如：艾莉"></label>
       </div>
       <div class="row">
+        <button class="btn primary" id="cmpSample" type="button">第一次用？載入範例</button>
         <button class="btn" id="cmpAddPsd" type="button">匯入 PSD</button>
-        <button class="btn" id="cmpSample" type="button">載入範例</button>
       </div>
-      <p class="hint"><strong>第一次用？</strong>按「載入範例」，會放入幾張畫好的簡單圖層，直接按「合成並送到命名」就能看到結果。</p>
-      <details class="howto"><summary>使用說明（流程與「用法」怎麼選）</summary>
-      <p class="hint"><strong>流程：</strong>① 新增圖層組並放入 PNG，或直接「匯入 PSD」（PSD 的資料夾會變成圖層組，隱藏的圖層不會預先勾選）。② 每個圖層組選一種用法（見下）。③ 輸出。列表越上面越在上層，可拖曳 ⠿ 調整。</p>
-      <p class="hint"><strong>每個圖層組的「用法」：</strong><br>
-        • <b>每張都一樣</b>：每張輸出都用你目前勾的那一個（例：身體、底色）。<br>
-        • <b>分成版本</b>：每個選項各成一個「版本」＝命名分頁裡的一個分頁（例：衣服有制服、便服 → 2 個版本）。<br>
-        • <b>分成差分</b>：在每個版本裡，每個選項各輸出一張圖（例：表情有笑、怒、驚 → 每版 3 張）。<br>
-        結果張數 ＝ 版本數 × 差分數。每個圖層組下面會即時寫出它會產生什麼。</p>
-    </details>
     </section>
     <div class="compgrid">
       <nav class="cside" id="cmpSide" aria-label="圖層組">
@@ -434,7 +424,7 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
         <div class="slist" id="cmpSideList"></div>
       </nav>
       <div class="compmain">
-        <p class="hint" style="margin:0">💡 圖層名稱會變成檔名裡的形容（差分）或版本名稱。這裡不用一次取好，送到「命名」分頁後，也可以再修改差分名稱和形容。</p>
+        <p class="hint" style="margin:0">💡 圖層名稱會變成檔名，不用一次取好，送至「命名」分頁處理也可以。</p>
         <div class="cdetail">
           <div class="cgroups" id="cmpGroups"></div>
           <aside class="comppv" aria-label="預覽">
@@ -447,7 +437,7 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
         </div>
         <section class="panel" aria-label="組合清單">
           <h2>組合清單</h2>
-          <p class="hint">在上面勾好一種組合（例如某個眼睛＋眉毛＋嘴），取個名字存起來，再勾下一種。名字會當作這張圖的形容。最後一次輸出全部。</p>
+          <p class="hint">在上面勾好一種組合，存起來，再勾下一種。名字會當作這張圖的形容。最後一次輸出全部。</p>
           <div class="row">
             <input type="text" id="cmbName" placeholder="組合名稱，例如：微笑（留空會用圖層名稱）" autocomplete="off" style="flex:1 1 220px;width:auto">
             <button class="btn primary" id="cmbSave" type="button">＋ 把目前勾選存成組合</button>
@@ -854,7 +844,7 @@ function renderPresets(){
     const d=document.createElement('button');d.type='button';d.className='pd';d.dataset.del=i;d.setAttribute('aria-label','刪除 '+p.name);d.textContent='×';
     w.append(a,d);box.appendChild(w);
   });
-  $('#memNote').textContent=lsOk?'目前用的格式會自動記住，下次打開頁面直接沿用。只記在這個瀏覽器，換裝置不會跟著走。':'這個環境不能儲存資料，關掉頁面後格式就會忘記。';
+  $('#memNote').textContent=lsOk?'':'這個環境不能儲存資料，關掉頁面後格式就會忘記。';
 }
 function renderAll(){renderTabs();renderSettings();renderTokens();renderGrid();updateNames();renderPresets();}
 
@@ -1244,7 +1234,7 @@ async function renderCropPanel(){
   strip.innerHTML='';
   if(!c.on){info.textContent='';return;}
   const files=g.items.filter(i=>i.file).slice(0,8);
-  if(!files.length){info.textContent='加入圖片後會在這裡顯示裁切預覽。';return;}
+  if(!files.length){info.textContent='';return;}
   for(let k=0;k<files.length;k++){
     let im;try{im=await createImageBitmap(files[k].file);}catch(_){continue;}
     if(token!==stripToken){if(im.close)im.close();return;}
@@ -1555,7 +1545,7 @@ function renderComp(){
   if(!comp.groups.some(g=>g.id===comp.cur))comp.cur=comp.groups.length?comp.groups[0].id:null;
   if(!comp.groups.length){
     const p=document.createElement('p');p.className='hint';
-    p.textContent='還沒有圖層組。按左邊的「＋ 新增圖層組」，再把 PNG 圖層放進去；也可以匯入 PSD 或載入範例。';box.appendChild(p);
+    p.textContent='還沒有圖層組。';box.appendChild(p);
   }
   for(const g of comp.groups)box.appendChild(groupEl(g));
   drawPv();renderPlan();
@@ -1945,7 +1935,7 @@ $('#cmpSample').addEventListener('click',loadSample);
 
 function drawPv(){
   const cv=cmp.pv,d=cmpDims();
-  if(!d){cv.width=1;cv.height=1;cmp.pvInfo.textContent='加入圖層後，這裡會顯示合成預覽。';return;}
+  if(!d){cv.width=1;cv.height=1;cmp.pvInfo.textContent='';return;}
   const sc=Math.min(1,PV_MAX/Math.max(d.w,d.h));
   cv.width=Math.max(1,Math.round(d.w*sc));cv.height=Math.max(1,Math.round(d.h*sc));
   const ctx=cv.getContext('2d');ctx.clearRect(0,0,cv.width,cv.height);
