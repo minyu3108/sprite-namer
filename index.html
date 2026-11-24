@@ -38,6 +38,27 @@
   --chip-l-bg:24%; --chip-l-ink:86%; --chip-s:35%;
   color-scheme:dark;
 }
+/* plain style: the original flat colours, no glow, no particles */
+@media (prefers-color-scheme:light){:root[data-style="plain"]:not([data-theme="dark"]){
+  --bg:#f3f4f7; --panel:#ffffff; --ink:#1b2230; --muted:#667085; --line:#dde1e9;
+  --accent:#2c56d6; --accent-ink:#ffffff; --warn:#c2410c; --warn-bg:#fff1e6;
+  --glow:none; --ring:rgba(44,86,214,.25);
+}}
+:root[data-style="plain"][data-theme="light"]{
+  --bg:#f3f4f7; --panel:#ffffff; --ink:#1b2230; --muted:#667085; --line:#dde1e9;
+  --accent:#2c56d6; --accent-ink:#ffffff; --warn:#c2410c; --warn-bg:#fff1e6;
+  --glow:none; --ring:rgba(44,86,214,.25);
+}
+@media (prefers-color-scheme:dark){:root[data-style="plain"]:not([data-theme="light"]){
+  --bg:#11151c; --panel:#1a2029; --ink:#e7ebf2; --muted:#9aa4b5; --line:#2c3543;
+  --accent:#7ea3ff; --accent-ink:#0f1623; --warn:#fdba74; --warn-bg:#3a2415;
+  --glow:none; --ring:rgba(126,163,255,.3);
+}}
+:root[data-style="plain"][data-theme="dark"]{
+  --bg:#11151c; --panel:#1a2029; --ink:#e7ebf2; --muted:#9aa4b5; --line:#2c3543;
+  --accent:#7ea3ff; --accent-ink:#0f1623; --warn:#fdba74; --warn-bg:#3a2415;
+  --glow:none; --ring:rgba(126,163,255,.3);
+}
 *{box-sizing:border-box}
 .toolbtns{position:absolute;top:20px;right:16px;z-index:60;display:flex;gap:6px}
 .themebtn{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer;font:inherit;font-size:13px;min-height:36px}
@@ -267,7 +288,7 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
 <body>
 <canvas id="fx" aria-hidden="true" style="position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none"></canvas>
 <div class="wrap">
-  <div class="toolbtns"><button class="themebtn" id="fxBtn" type="button" title="背景動畫開／關"></button><button class="themebtn" id="themeBtn" type="button" title="切換亮／暗模式"></button></div>
+  <div class="toolbtns"><button class="themebtn" id="styleBtn" type="button" title="簡潔配色（單色、無背景動畫）"></button><button class="themebtn" id="fxBtn" type="button" title="背景動畫開／關"></button><button class="themebtn" id="themeBtn" type="button" title="切換亮／暗模式"></button></div>
   <header>
     <h1>立繪差分命名器</h1>
     <p class="sub">替立繪差分圖批量加上名字與編號，也能把分開的圖層合成各種差分。圖片只在你的瀏覽器內處理，不會上傳。</p>
@@ -2391,18 +2412,27 @@ const FX={
 let stopFx=null,fxMode='';
 const darkMq=window.matchMedia?matchMedia('(prefers-color-scheme: dark)'):null;
 function curTheme(){const t=document.documentElement.dataset.theme;return t||(darkMq&&darkMq.matches?'dark':'light');}
-let fxOn=true;
-try{fxOn=localStorage.getItem('spriteNamerFx')!=='off';}catch(_){}
+let fxOn=true,plain=false;
+try{fxOn=localStorage.getItem('spriteNamerFx')!=='off';plain=localStorage.getItem('spriteNamerStyle')==='plain';}catch(_){}
+function applyStyle(){if(plain)document.documentElement.dataset.style='plain';else delete document.documentElement.dataset.style;}
+applyStyle();
 function syncTheme(force){
   const m=curTheme();
   $('#themeBtn').textContent=m==='dark'?'☀ 亮模式':'🌙 暗模式';
+  $('#styleBtn').textContent=plain?'🎨 彩色配色':'◻ 簡潔配色';
+  $('#fxBtn').hidden=plain;
   $('#fxBtn').textContent=fxOn?'✨ 動畫：開':'動畫：關';
   $('#fxBtn').setAttribute('aria-pressed',fxOn);
   if(!force&&m===fxMode)return;
   fxMode=m;if(stopFx){stopFx();stopFx=null;}
-  if(!fxOn)return;
+  if(!fxOn||plain)return;
   try{stopFx=startFx(document.getElementById('fx'),FX[m]);}catch(_){}
 }
+$('#styleBtn').addEventListener('click',()=>{
+  plain=!plain;applyStyle();
+  try{localStorage.setItem('spriteNamerStyle',plain?'plain':'');}catch(_){}
+  syncTheme(true);
+});
 $('#fxBtn').addEventListener('click',()=>{
   fxOn=!fxOn;
   try{localStorage.setItem('spriteNamerFx',fxOn?'on':'off');}catch(_){}
