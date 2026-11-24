@@ -168,6 +168,10 @@ section.panel,.cgroup{scroll-margin-top:64px}
 .clname{flex:1 1 0;min-width:0}
 .clsel{width:20px;height:20px;flex:0 0 auto}
 .clwarn{color:var(--warn);cursor:help}
+.btn.rainbow{color:#1b1230;font-weight:700;border:0;background:linear-gradient(90deg,#ff8a8a,#ffc46b,#f6f07a,#8fe3a0,#7cc8ff,#a99bff,#e79bff,#ff8a8a);background-size:200% 100%;animation:rainbowMove 6s linear infinite;text-shadow:0 1px 0 rgba(255,255,255,.35)}
+.btn.rainbow:hover{filter:brightness(1.06)}
+@keyframes rainbowMove{to{background-position:-200% 0}}
+@media (prefers-reduced-motion:reduce){.btn.rainbow{animation:none}}
 .howto{border:1px solid var(--line);border-radius:10px;padding:0 12px}.howto summary{cursor:pointer;padding:8px 0;font-weight:600}.howto .hint{margin:0 0 10px}
 .faq h2{margin:0 0 6px}.faq h3{margin:14px 0 6px;font-size:14px;color:var(--muted)}
 .faq details{border:1px solid var(--line,#d9dde5);border-radius:10px;margin:6px 0;padding:0 12px;background:var(--panel,transparent)}
@@ -413,7 +417,7 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
         <label class="f" for="cmpName">角色名字（送到命名時使用，可留空）<input type="text" id="cmpName" autocomplete="off" placeholder="例如：艾莉"></label>
       </div>
       <div class="row">
-        <button class="btn primary" id="cmpSample" type="button">第一次用？載入範例</button>
+        <button class="btn rainbow" id="cmpSample" type="button">第一次用？載入範例</button>
         <button class="btn" id="cmpAddPsd" type="button">匯入 PSD</button>
       </div>
     </section>
