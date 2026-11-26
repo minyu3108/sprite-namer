@@ -155,7 +155,7 @@ body.wide .wrap{max-width:1240px}
 .cgtop{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .cgtop .grip,.clrow .grip{cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;color:var(--muted);padding:6px 4px;font-size:16px}
 .cgname{flex:1 1 120px;min-width:0}
-.cgtop select{width:auto;min-height:38px}
+.cgtop select,.check select{width:auto;min-height:38px}
 .xbtn{border:0;background:transparent;cursor:pointer;width:30px;height:30px;border-radius:6px;color:var(--muted);font-size:16px;flex:0 0 auto}
 .xbtn:hover{background:var(--line);color:var(--ink)}
 .clayers{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
@@ -469,6 +469,18 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
             <label class="check"><input type="radio" name="cmpItemMode" id="cmpModeCombo" value="combo"> 差分用「組合清單」：每個版本輸出清單裡的組合（<span id="cmpComboCount">0</span> 個）</label>
             <label class="check"><input type="radio" name="cmpItemMode" id="cmpModeAuto" value="auto"> 差分自動展開：標成「分成差分」的圖層組，每個選項各一張（多組會互相搭配）</label>
           </div>
+          <label class="check">圖層名稱合在一起時，中間插入：
+            <select id="cmpSep">
+              <option value="">（不插入）</option>
+              <option value="-">-　連字號</option>
+              <option value="+">+　加號</option>
+              <option value="_">_　底線</option>
+              <option value="・">・　中點</option>
+              <option value=" ">空格</option>
+              <option value=".">.　句點</option>
+              <option value="&amp;">&amp;</option>
+            </select>
+          </label>
           <label class="check"><input type="checkbox" id="cmpMerge" checked> 角色名字和版本名稱相同的，併入命名分頁裡既有的版本（不會另開新版本）</label>
           <div class="notice" id="cmpPlan"></div>
           <div class="row">
@@ -1502,6 +1514,8 @@ $('#tabComp').addEventListener('click',()=>{setView('comp');drawPv();});
 
 /* ---------- compose layers ---------- */
 const comp={groups:[],combos:[],itemMode:'auto'};
+let LSEP='';try{LSEP=localStorage.getItem('spriteNamerSep')||'';}catch(_){}
+const joinL=a=>a.filter(Boolean).join(LSEP);
 const PV_MAX=720,BMP_BUDGET=256*1024*1024;
 const cmp={groups:$('#cmpGroups'),side:$('#cmpSide'),sideList:$('#cmpSideList'),pv:$('#cmpPv'),pvInfo:$('#cmpPvInfo'),plan:$('#cmpPlan'),msg:$('#cmpMsg'),run:$('#cmpRun'),stop:$('#cmpStop'),file:$('#cmpFile'),name:$('#cmpName')};
 let cmpTarget=null,cmpBusy=false,cmpStop=false;
@@ -2022,7 +2036,7 @@ function optsOf(g){
   const out=[];
   for(let m=0;m<(1<<n);m++){
     const ls=g.layers.filter((l,i)=>m&(1<<i));
-    out.push({label:ls.map(l=>l.name.trim()).join(''),ids:ls.map(l=>l.id)});
+    out.push({label:joinL(ls.map(l=>l.name.trim())),ids:ls.map(l=>l.id)});
   }
   return out.sort((a,b)=>a.ids.length-b.ids.length);
 }
@@ -2030,7 +2044,7 @@ function product(lists){
   let acc=[{label:'',ids:[]}];
   for(const opts of lists){
     const nx=[];
-    for(const a of acc)for(const o of opts)nx.push({label:a.label+o.label,ids:a.ids.concat(o.ids)});
+    for(const a of acc)for(const o of opts)nx.push({label:joinL([a.label,o.label]),ids:a.ids.concat(o.ids)});
     acc=nx;
   }
   return acc;
@@ -2115,6 +2129,8 @@ function renderPlan(){
   el.textContent=txt;el.className='notice'+(bad?' warn':'');
   cmp.run.disabled=bad||cmpBusy;
 }
+{const sel=$('#cmpSep');sel.value=LSEP;if(sel.value!==LSEP)sel.value='';
+sel.addEventListener('change',()=>{LSEP=sel.value;try{localStorage.setItem('spriteNamerSep',LSEP);}catch(_){}renderPlan();});}
 document.querySelectorAll('input[name=cmpItemMode]').forEach(r=>r.addEventListener('change',e=>{comp.itemMode=e.target.value;renderPlan();}));
 
 /* ---------- saved combos ---------- */
@@ -2125,7 +2141,7 @@ function autoComboName(){
     const g=comp.groups[gi];if(g.role!=='item')continue;
     for(const id of curSel(g)){const f=findLayer(id);if(f&&f.l.name.trim())names.push(f.l.name.trim());}
   }
-  return names.join('')||('組合'+(comp.combos.length+1));
+  return joinL(names)||('組合'+(comp.combos.length+1));
 }
 function smallComposite(){
   const d=cmpDims();if(!d)return '';
