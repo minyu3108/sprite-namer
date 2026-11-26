@@ -545,6 +545,7 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
     </div>
     <div class="row">
       <button class="btn" id="cutAll" type="button">套用到本版全部圖片</button>
+      <label class="check"><input type="checkbox" id="cutAllOv"> 連筆刷一併套用（尺寸相同的圖才會套用）</label>
       <button class="btn" id="cutRestoreOrig" type="button" hidden>還原成原圖</button>
       <span class="hint" id="cutMsg" style="flex:1 1 220px"></span>
     </div>
@@ -2548,15 +2549,29 @@ async function openCut(idx){
   cut.res=document.createElement('canvas');cut.res.width=cut.w;cut.res.height=cut.h;cut.rctx=cut.res.getContext('2d');
   cut.out=new ImageData(new Uint8ClampedArray(cut.src.data),cut.w,cut.h);
   cut.ov=new Uint8Array(cut.w*cut.h);cut.undo=[];cut.redo=[];
-  if(cut.bgAuto)cut.bg=cutGuessBg(cut.src.data,cut.w,cut.h);
+  const st=it.cutState;
+  if(st){
+    $('#cutTol').value=st.tol;$('#cutEr').value=st.er;$('#cutFe').value=st.fe;$('#cutContig').checked=st.contig;
+    cut.bg=st.bg.slice();cut.bgAuto=st.bgAuto;
+    if(st.pack&&st.w===cut.w&&st.h===cut.h)cut.ov=cutUnpack(st.pack,cut.w*cut.h);
+  }else if(cut.bgAuto)cut.bg=cutGuessBg(cut.src.data,cut.w,cut.h);
   cut.z=1;cutSize();cutClamp();cutLabels();
   $('#cutPos').textContent='去背 — 第 '+(idx+1)+' / '+g.items.length+' 張';
   $('#cutNext').hidden=idx>=g.items.length-1;
   $('#cutRestoreOrig').hidden=!it.origFile;
-  cut.msg.textContent='先用「容許誤差」把背景去乾淨；背景是別種顏色時用「吸取背景色」點一下背景。細節再用擦掉／補回修。';
+  cut.msg.textContent=st?'已載入上次的設定與筆刷修改，可以接著修。':'先用「容許誤差」把背景去乾淨；背景是別種顏色時用「吸取背景色」點一下背景。細節再用擦掉／補回修。';
   cutRecompute();
 }
 function cutClose(){cut.modal.hidden=true;cut.src=cut.out=cut.res=cut.autoA=cut.ov=null;cut.undo=[];cut.redo=[];}
+/* remember brush edits + settings per picture (run-length packed; lives as long as the page is open) */
+function cutPack(ov){
+  if(!ov||!ov.some(v=>v))return null;
+  const r=[];let v=ov[0],c=1;
+  for(let i=1;i<ov.length;i++){if(ov[i]===v)c++;else{r.push(v,c);v=ov[i];c=1;}}
+  r.push(v,c);return Int32Array.from(r);
+}
+function cutUnpack(pk,n){const o=new Uint8Array(n);let i=0;for(let k=0;k<pk.length;k+=2){const v=pk[k],c=pk[k+1];if(v)o.fill(v,i,i+c);i+=c;}return o;}
+function cutSnap(ov,w,h,opts,bgAuto){return {pack:cutPack(ov),w,h,tol:opts.tol,er:opts.erode,fe:opts.feather,contig:opts.contig,bg:opts.bg.slice(),bgAuto};}
 function cutPushUndo(){cut.undo.push(cut.ov.slice());if(cut.undo.length>10)cut.undo.shift();cut.redo=[];}
 function cutRestoreOv(a){cut.ov=a;cutWrite(0,0,cut.w-1,cut.h-1);cut.rctx.putImageData(cut.out,0,0);cutDraw();}
 $('#cutUndo').addEventListener('click',()=>{if(!cut.undo.length)return;cut.redo.push(cut.ov.slice());cutRestoreOv(cut.undo.pop());});
@@ -2630,7 +2645,7 @@ const cutBlob=c=>new Promise(r=>c.toBlob(r,'image/png'));
 async function cutApply(next){
   if(!cut.src)return;
   const blob=await cutBlob(cut.res);if(!blob){cut.msg.textContent='輸出失敗，請再試一次。';return;}
-  const old=cutReplace(cut.it,blob);renderGrid();updateNames();if(old)setTimeout(()=>URL.revokeObjectURL(old),500);
+  const old=cutReplace(cut.it,blob);cut.it.cutState=cutSnap(cut.ov,cut.w,cut.h,cutOpts(),cut.bgAuto);renderGrid();updateNames();if(old)setTimeout(()=>URL.revokeObjectURL(old),500);
   const idx=cut.idx;
   if(next&&idx<cur().items.length-1){let n=idx+1;while(n<cur().items.length&&!cur().items[n].file)n++;if(n<cur().items.length){await openCut(n);return;}}
   cutClose();msg('已去背第 '+(idx+1)+' 張。');
@@ -2640,13 +2655,14 @@ $('#cutNext').addEventListener('click',()=>cutApply(true));
 $('#cutCancel').addEventListener('click',cutClose);
 $('#cutRestoreOrig').addEventListener('click',()=>{
   const it=cut.it;if(!it||!it.origFile)return;
-  const old=it.url;it.file=it.origFile;delete it.origFile;it.url=URL.createObjectURL(it.file);it.ext=getExt(it.file);cutDropThumb(it);
+  const old=it.url;it.file=it.origFile;delete it.origFile;it.url=URL.createObjectURL(it.file);it.ext=getExt(it.file);delete it.cutState;cutDropThumb(it);
   renderGrid();updateNames();if(old)setTimeout(()=>URL.revokeObjectURL(old),500);cutClose();msg('已還原成原圖。');
 });
 $('#cutAll').addEventListener('click',e=>{
   const g=cur(),list=g.items.filter(i=>i.file);if(!list.length)return;
   armed(e.currentTarget,'再按一次：用目前的設定處理 '+list.length+' 張',async()=>{
-    const o=cutOpts(),btn=$('#cutAll');btn.disabled=true;let done=0,fail=0;
+    const o=cutOpts(),btn=$('#cutAll');btn.disabled=true;let done=0,fail=0,skipOv=0;
+    const useOv=$('#cutAllOv').checked&&cut.ov&&cut.ov.some(v=>v),ov=cut.ov,ow=cut.w,oh=cut.h,curIt=cut.it;
     for(const it of list){
       cut.msg.textContent='處理中… '+(done+1)+' / '+list.length;
       await new Promise(r=>setTimeout(r,0));
@@ -2654,15 +2670,19 @@ $('#cutAll').addEventListener('click',e=>{
         const id=await cutLoad(it.origFile||it.file),oo=Object.assign({},o);
         if(cut.bgAuto)oo.bg=cutGuessBg(id.data,id.width,id.height);
         const A=cutAlpha(id.data,id.width,id.height,oo),d=id.data;
+        if(it===curIt&&ov){for(let i=0;i<A.length;i++){const v=ov[i];if(v===1)A[i]=0;else if(v===2)A[i]=d[i*4+3];}}
+        else if(useOv){if(id.width===ow&&id.height===oh){for(let i=0;i<A.length;i++){const v=ov[i];if(v===1)A[i]=0;else if(v===2)A[i]=d[i*4+3];}}else skipOv++;}
         for(let i=0;i<A.length;i++)d[i*4+3]=A[i];
         const c=document.createElement('canvas');c.width=id.width;c.height=id.height;c.getContext('2d').putImageData(id,0,0);
         const b=await cutBlob(c);if(!b)throw 0;
         const old=cutReplace(it,b);if(old)setTimeout(()=>URL.revokeObjectURL(old),1500);
+        const usedOv=(it===curIt&&ov)||(useOv&&id.width===ow&&id.height===oh);
+        it.cutState=cutSnap(usedOv?ov:null,id.width,id.height,oo,cut.bgAuto);
       }catch(_){fail++;}
       done++;
     }
     btn.disabled=false;renderGrid();updateNames();cutClose();
-    msg('已處理 '+(done-fail)+' 張'+(fail?'，失敗 '+fail+' 張':'')+'。每張都能在去背視窗按「還原成原圖」。',!!fail);
+    msg('已處理 '+(done-fail)+' 張'+(skipOv?'，其中 '+skipOv+' 張尺寸不同，沒有套用筆刷':'')+(fail?'，失敗 '+fail+' 張':'')+'。每張都能在去背視窗按「還原成原圖」。',!!(fail||skipOv));
   });
 });
 $('#btnCut').addEventListener('click',()=>{if(!cur().items.some(i=>i.file)){msg('先加入圖片再去背。',true);return;}openCut(Math.max(0,cur().items.findIndex(i=>i.file)));});
