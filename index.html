@@ -282,6 +282,8 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
 @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 
 /* auto-naming advanced row */
+.clmul{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:6px;font-size:12px;padding:2px 7px;min-height:26px;cursor:pointer;flex:none}
+.clmul.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .cgadv{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;padding:10px 12px;border-radius:10px;background:var(--bg)}
 .cgadv[hidden]{display:none}
 .afld{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)}
@@ -1519,6 +1521,13 @@ $('#cmpAddMouth').addEventListener('click',()=>addCmpGroup('嘴','single','item'
 $('#cmpAddAcc').addEventListener('click',()=>addCmpGroup('配件','multi','version'));
 $('#cmpAddBlank').addEventListener('click',()=>addCmpGroup('','single','fixed'));
 
+/* blend mode per layer: 'normal' or 'multiply' (色彩增值) */
+const groupBlend=g=>{if(!g.layers.length)return 'normal';const m=g.layers.filter(l=>l.blend==='multiply').length;return m===0?'normal':(m===g.layers.length?'multiply':'mixed');};
+function dl(ctx,l,img,w,h){
+  ctx.globalCompositeOperation=l.blend==='multiply'?'multiply':'source-over';
+  if(w==null)ctx.drawImage(img,0,0);else ctx.drawImage(img,0,0,w,h);
+  ctx.globalCompositeOperation='source-over';
+}
 const curSel=g=>g.mode==='single'?(g.sel?[g.sel]:[]):g.layers.filter(l=>l.on).map(l=>l.id);
 /* draw order: bottom group first, and bottom layer first inside a group (list top = upper layer) */
 function layersInOrder(ids){
@@ -1546,6 +1555,7 @@ function groupEl(g){
     '<input type="text" class="cgname" aria-label="圖層組名稱" placeholder="圖層組名稱，例如：表情" autocomplete="off">'+
     '<select class="cgmode" aria-label="選擇方式"><option value="single">單選</option><option value="multi">多選</option></select>'+
     '<select class="cgrole" aria-label="用法"><option value="fixed">每張都一樣</option><option value="version">分成版本</option><option value="item">分成差分</option></select>'+
+    '<select class="cgblend" aria-label="混合模式" title="色彩增值：圖層顏色會和下面的顏色相乘，常用於陰影、腮紅"><option value="normal">混合：一般</option><option value="multiply">混合：色彩增值</option><option value="mixed" disabled hidden>混合：各自不同</option></select>'+
     '<label class="cgnone" title="多輸出一個「沒有這組圖層」的結果。只有一個圖層（例如帽子）也能分成「有／沒有」，不用另外準備空白圖層"><input type="checkbox" class="cgnonecb">含「沒有」</label>'+
     '<button class="xbtn gx" type="button" aria-label="刪除這個圖層組">×</button></div>'+
     '<div class="cgsum" aria-live="polite"></div><div class="clayers"></div>'+
@@ -1565,6 +1575,7 @@ function groupEl(g){
    el.querySelector('.cgadv').hidden=!g.advOpen;
    const nb=el.querySelector('.cgnone');nb.hidden=!(g.mode==='single'&&g.role!=='fixed');nb.querySelector('input').checked=noneOf(g);}
   el.querySelector('.cgrole').value=g.role;
+  el.querySelector('.cgblend').value=groupBlend(g);
   const lc=el.querySelector('.clayers'),d=cmpDims();
   if(g.mode==='single'){
     const n=document.createElement('label');n.className='clnone';
@@ -1586,7 +1597,8 @@ function groupEl(g){
     if(d&&(l.w!==d.w||l.h!==d.h)){
       const w=document.createElement('span');w.className='clwarn';w.textContent='⚠';w.title='尺寸是 '+l.w+'×'+l.h+'，和第一張不同，位置可能對不齊';row.appendChild(w);
     }
-    row.appendChild(x);lc.appendChild(row);
+    const mu=document.createElement('button');mu.type='button';mu.className='clmul'+(l.blend==='multiply'?' on':'');mu.textContent='乘';mu.title='色彩增值（'+(l.blend==='multiply'?'已開啟':'未開啟')+'），點一下切換';mu.setAttribute('aria-pressed',String(l.blend==='multiply'));
+    row.appendChild(mu);row.appendChild(x);lc.appendChild(row);
   }
   return el;
 }
@@ -1720,6 +1732,7 @@ cmp.groups.addEventListener('change',e=>{
     if(m==='single'&&g.mode==='multi'){const f=g.layers.find(l=>l.on);g.sel=f?f.id:null;}
     g.mode=m;renderComp();
   }else if(e.target.classList.contains('cgrole')){g.role=e.target.value;renderComp();}
+  else if(e.target.classList.contains('cgblend')){const v=e.target.value==='multiply'?'multiply':'normal';g.layers.forEach(l=>{l.blend=v;});renderComp();}
   else if(e.target.classList.contains('cgnonecb')){g.none=e.target.checked;renderPlan();}
   else if(e.target.closest('.cgadv')){readAuto(grp,g);}
   else if(e.target.classList.contains('clsel')){
@@ -1734,6 +1747,7 @@ cmp.groups.addEventListener('click',e=>{
   const g=comp.groups.find(x=>x.id===grp.dataset.id);if(!g)return;
   if(e.target.closest('.cauto')){readAuto(grp,g);applyAutoName(g);renderComp();}
   else if(e.target.closest('.cadvbtn')){g.advOpen=!g.advOpen;grp.querySelector('.cgadv').hidden=!g.advOpen;}
+  else if(e.target.closest('.clmul')){const row=e.target.closest('.clrow'),l=g.layers.find(x=>x.id===row.dataset.id);if(l){l.blend=l.blend==='multiply'?'normal':'multiply';renderComp();}}
   else if(e.target.closest('.gx')){comp.groups=comp.groups.filter(x=>x!==g);renderComp();}
   else if(e.target.closest('.lx')){
     const row=e.target.closest('.clrow');g.layers=g.layers.filter(l=>l.id!==row.dataset.id);
@@ -1763,7 +1777,7 @@ async function makeLayer(file){
   const ts=Math.min(1,56/Math.max(prev.width,prev.height)),th=document.createElement('canvas');
   th.width=Math.max(1,Math.round(prev.width*ts));th.height=Math.max(1,Math.round(prev.height*ts));
   th.getContext('2d').drawImage(prev,0,0,th.width,th.height);
-  return {id:nid(),name:file.name.replace(/\.[A-Za-z0-9]{2,5}$/,'').trim()||'圖層',file,w,h,prev,th:th.toDataURL(),on:false};
+  return {id:nid(),name:file.name.replace(/\.[A-Za-z0-9]{2,5}$/,'').trim()||'圖層',file,w,h,prev,th:th.toDataURL(),on:false,blend:'normal'};
 }
 async function addLayerFiles(gid,list){
   const g=comp.groups.find(x=>x.id===gid);if(!g)return;
@@ -1775,6 +1789,7 @@ async function addLayerFiles(gid,list){
     const l=await makeLayer(files[i]);
     if(!l){fail++;continue;}
     if(g.mode==='single'&&!g.layers.length)g.sel=l.id;
+    if(groupBlend(g)==='multiply')l.blend='multiply';
     g.layers.push(l);ok++;
     await new Promise(r=>setTimeout(r,0));
   }
@@ -1811,7 +1826,7 @@ function psdCollect(psd){
       if(!c.canvas&&!c.imageData){skipped++;continue;}
       if(c.mask)warns.add('有圖層遮罩（mask），不會套用');
       if(c.clipping)warns.add('有剪裁遮罩（clipping），不會套用');
-      if(c.blendMode&&c.blendMode!=='normal'&&c.blendMode!=='pass through')warns.add('有混合模式（'+c.blendMode+'），會當一般圖層');
+      if(c.blendMode&&c.blendMode!=='normal'&&c.blendMode!=='pass through'&&c.blendMode!=='multiply')warns.add('有混合模式（'+c.blendMode+'），會當一般圖層');
       if(c.effects)warns.add('有圖層樣式（陰影、外框等），不會套用');
       acc.push({name:full,layer:c,on:!hidden});
     }
@@ -1867,6 +1882,7 @@ async function importPsd(file){
         const f=new File([blob],a.name.replace(/[\\/:*?"<>|]/g,'_')+'.png',{type:'image/png'});
         const l=await makeLayer(f);if(!l)continue;
         l.name=a.name.split('/').pop().trim()||'圖層';
+        if(a.layer.blendMode==='multiply')l.blend='multiply';
         if(g.mode==='multi')l.on=a.on;else if(a.on)g.sel=l.id;
         g.layers.push(l);
         await new Promise(r=>setTimeout(r,0));
@@ -1918,7 +1934,7 @@ async function exportPsd(){
         const t=trimCanvas(full);
         if(!t.canvas){empty++;}
         const on=g.mode==='single'?g.sel===l.id:l.on;
-        ch.push(Object.assign({name:l.name||'圖層',hidden:!on,opacity:1,blendMode:'normal'},t.canvas?{canvas:t.canvas,left:t.left,top:t.top}:{}));
+        ch.push(Object.assign({name:l.name||'圖層',hidden:!on,opacity:1,blendMode:l.blend==='multiply'?'multiply':'normal'},t.canvas?{canvas:t.canvas,left:t.left,top:t.top}:{}));
         await new Promise(r=>setTimeout(r,0));
       }
       if(ch.length)kids.push({name:g.name.trim()||'圖層組',opened:true,children:ch});
@@ -1927,7 +1943,7 @@ async function exportPsd(){
     const comp0=document.createElement('canvas');comp0.width=d.w;comp0.height=d.h;
     const cctx=comp0.getContext('2d'),ids=new Set();
     comp.groups.forEach(g=>curSel(g).forEach(id=>ids.add(id)));
-    for(const l of layersInOrder(ids))cctx.drawImage(await fullBmp(l),0,0);
+    for(const l of layersInOrder(ids))dl(cctx,l,await fullBmp(l));
     clearBmpCache();
     cmpMsg('寫出 PSD…');
     await new Promise(r=>setTimeout(r,0));
@@ -1990,7 +2006,7 @@ function drawPv(){
   cv.width=Math.max(1,Math.round(d.w*sc));cv.height=Math.max(1,Math.round(d.h*sc));
   const ctx=cv.getContext('2d');ctx.clearRect(0,0,cv.width,cv.height);
   const ids=new Set();comp.groups.forEach(g=>curSel(g).forEach(id=>ids.add(id)));
-  for(const l of layersInOrder(ids))ctx.drawImage(l.prev,0,0,l.w*sc,l.h*sc);
+  for(const l of layersInOrder(ids))dl(ctx,l,l.prev,l.w*sc,l.h*sc);
   cmp.pvInfo.textContent='原尺寸 '+d.w+'×'+d.h+' px。預覽是目前勾選的組合，輸出時會依各組的「用法」展開。';
 }
 const noneOf=g=>g.none==null?g.layers.length===1:!!g.none;
@@ -2117,7 +2133,7 @@ function smallComposite(){
   cv.width=Math.max(1,Math.round(d.w*sc));cv.height=Math.max(1,Math.round(d.h*sc));
   const ctx=cv.getContext('2d'),ids=new Set();
   comp.groups.forEach(g=>curSel(g).forEach(id=>ids.add(id)));
-  for(const l of layersInOrder(ids))ctx.drawImage(l.prev,0,0,l.w*sc,l.h*sc);
+  for(const l of layersInOrder(ids))dl(ctx,l,l.prev,l.w*sc,l.h*sc);
   return cv.toDataURL();
 }
 function renderCombos(){
@@ -2223,7 +2239,7 @@ async function runCmp(){
         cmpMsg('合成中 '+(++n)+' / '+plan.total+'…');
         const ids=new Set(plan.mode==='combo'?comboIds(it.combo).concat(v.ids):plan.fixed.concat(v.ids,it.ids));
         ctx.clearRect(0,0,d.w,d.h);
-        for(const l of layersInOrder(ids))ctx.drawImage(await fullBmp(l),0,0);
+        for(const l of layersInOrder(ids))dl(ctx,l,await fullBmp(l));
         const blob=await new Promise(r=>cv.toBlob(r,'image/png'));
         if(!blob)throw new Error('輸出圖片失敗，可能是記憶體不足');
         const fname=((who||'合成')+'_'+(v.label||'基本')+'_'+(it.label||n)+'_'+n).replace(BAD,'')+'.png';
@@ -2402,8 +2418,8 @@ async function openBig(){
   const w=Math.max(1,Math.round(d.w*sc)),h=Math.max(1,Math.round(d.h*sc));
   const cv=document.createElement('canvas');cv.width=w;cv.height=h;const ctx=cv.getContext('2d');
   const ids=new Set();comp.groups.forEach(g=>curSel(g).forEach(id=>ids.add(id)));
-  try{for(const l of layersInOrder(ids))ctx.drawImage(await fullBmp(l),0,0,w,h);}
-  catch(_){for(const l of layersInOrder(ids))ctx.drawImage(l.prev,0,0,w,h);}
+  try{for(const l of layersInOrder(ids))dl(ctx,l,await fullBmp(l),w,h);}
+  catch(_){for(const l of layersInOrder(ids))dl(ctx,l,l.prev,w,h);}
   if(lb.modal.hidden)return;
   lbShow(cv,w,h,'組合預覽 '+d.w+'×'+d.h+' px'+(sc<1?'（縮小顯示）':''));
 }
