@@ -252,7 +252,8 @@ textarea{width:100%;min-height:120px;background:var(--bg);border:1px solid var(-
 .mbox{background:var(--panel);border:1px solid var(--line);border-radius:14px;width:min(560px,100%);max-height:100%;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
 .mhead{display:flex;justify-content:space-between;align-items:center;font-weight:700}
 .mimg{background:repeating-conic-gradient(color-mix(in srgb,var(--ink) 22%,var(--panel)) 0 25%,color-mix(in srgb,var(--ink) 7%,var(--panel)) 0 50%) 0 0/16px 16px;border-radius:10px;display:flex;align-items:center;justify-content:center;min-height:140px;max-height:52vh;overflow:hidden}
-.mimg img{max-width:100%;max-height:52vh;object-fit:contain;display:block}
+.mimg img{max-width:100%;max-height:52vh;object-fit:contain;display:block;transform-origin:50% 50%;user-select:none;-webkit-user-drag:none}
+.mimg{touch-action:none;cursor:zoom-in}.mimg.zoomed{cursor:grab}.mimg.zoomed.drag{cursor:grabbing}
 .mimg .noimg{color:var(--muted);padding:40px 0}
 .mname{font-family:var(--mono);font-size:13px;word-break:break-all;background:var(--bg);border-radius:8px;padding:8px 10px}
 .mnav{display:flex;gap:8px}
@@ -356,7 +357,7 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
       </div>
     </div>
     <div class="pvbgs" role="group" aria-label="預覽底色"><span>底色</span><button type="button" data-pv=""><i style="background:repeating-conic-gradient(#999 0 25%,#fff 0 50%) 0 0/6px 6px"></i>棋盤</button><button type="button" data-pv="w"><i style="background:#fff"></i>白</button><button type="button" data-pv="k"><i style="background:#141414"></i>黑</button><button type="button" data-pv="g"><i style="background:#808080"></i>灰</button><button type="button" data-pv="e"><i style="background:#2fd27a"></i>綠</button></div>
-    <p class="hint">拖曳卡片上方的條列來改順序，編號會即時變動；點圖片可放大並輸入形容。</p>
+    <p class="hint">拖曳卡片上方的條列來改順序，編號會即時變動；點圖片可放大並輸入形容（放大後可用滾輪縮放、拖曳移動）。</p>
     <div class="row">
       <label class="check"><input type="checkbox" id="optDesc" checked> 加入圖片時，從檔名偵測形容</label>
       <label class="check"><input type="checkbox" id="optName" checked> 角色名字是空的時，從檔名偵測名字</label>
@@ -1035,6 +1036,34 @@ el.grid.addEventListener('click',e=>{
 
 /* ---------- modal ---------- */
 let mi=-1;
+const mz={z:1,x:0,y:0,drag:null};
+function mzApply(){
+  const im=el.mImg.querySelector('img');if(!im)return;
+  im.style.transform=mz.z===1?'':'translate('+mz.x+'px,'+mz.y+'px) scale('+mz.z+')';
+  im.style.imageRendering=mz.z>3?'pixelated':'';
+  el.mImg.classList.toggle('zoomed',mz.z>1);
+}
+function mzReset(){mz.z=1;mz.x=mz.y=0;mz.drag=null;el.mImg.classList.remove('drag');mzApply();}
+el.mImg.addEventListener('wheel',e=>{
+  if(!el.mImg.querySelector('img'))return;
+  e.preventDefault();
+  const r=el.mImg.getBoundingClientRect(),px=e.clientX-(r.left+r.width/2),py=e.clientY-(r.top+r.height/2);
+  const z=Math.max(1,Math.min(16,mz.z*Math.exp(-e.deltaY*(e.deltaMode===1?0.05:0.0015))));
+  const k=z/mz.z;mz.x=px-(px-mz.x)*k;mz.y=py-(py-mz.y)*k;mz.z=z;
+  if(z===1){mz.x=mz.y=0;}
+  mzApply();
+},{passive:false});
+el.mImg.addEventListener('pointerdown',e=>{
+  if(mz.z<=1||e.button>0)return;
+  mz.drag={px:e.clientX,py:e.clientY,x:mz.x,y:mz.y};el.mImg.classList.add('drag');
+  try{el.mImg.setPointerCapture(e.pointerId);}catch(_){}
+});
+el.mImg.addEventListener('pointermove',e=>{
+  if(!mz.drag)return;mz.x=mz.drag.x+e.clientX-mz.drag.px;mz.y=mz.drag.y+e.clientY-mz.drag.py;mzApply();
+});
+const mzEnd=()=>{mz.drag=null;el.mImg.classList.remove('drag');};
+el.mImg.addEventListener('pointerup',mzEnd);el.mImg.addEventListener('pointercancel',mzEnd);
+el.mImg.addEventListener('dblclick',mzReset);
 function openModal(i){
   const g=cur();if(!g.items.length){msg('先加入圖片再輸入形容。',true);return;}
   mi=Math.max(0,Math.min(i,g.items.length-1));
@@ -1047,6 +1076,7 @@ function showModal(){
   el.mImg.innerHTML='';
   if(it.file){const im=document.createElement('img');im.alt='';im.src=it.url;el.mImg.appendChild(im);}
   else{const d=document.createElement('div');d.className='noimg';d.textContent='這個位置還沒有圖片';el.mImg.appendChild(d);}
+  mzReset();
   el.mDesc.value=it.desc;
   el.mName.textContent=fileName(g,mi,it);
   $('#mPrev').disabled=mi===0;
@@ -2537,6 +2567,8 @@ function cutClamp(){
 }
 function cutDrawNow(){
   cut.raf=0;if(cut.modal.hidden||!cut.res)return;
+  {const r=cut.stage.getBoundingClientRect();
+   if(Math.abs(r.width-cut.W)>0.5||Math.abs(r.height-cut.H)>0.5){cutSize();cutClamp();}}
   const ctx=cut.cv.getContext('2d'),s=cutFitScale()*cut.z;
   ctx.setTransform(cut.d,0,0,cut.d,0,0);ctx.clearRect(0,0,cut.W,cut.H);
   lbBg(ctx,cut.ox,cut.oy,cut.w*s,cut.h*s);
@@ -2656,6 +2688,7 @@ const cutEnd=()=>{cut.pan=null;cut.stroke=null;cut.stage.classList.remove('drag'
 cut.stage.addEventListener('pointerup',cutEnd);cut.stage.addEventListener('pointercancel',cutEnd);
 cut.stage.addEventListener('pointerleave',()=>{cut.mx=cut.my=-1e4;cutDraw();});
 window.addEventListener('resize',()=>{if(!cut.modal.hidden&&cut.src){cutSize();cutClamp();cutDraw();}});
+if(window.ResizeObserver)new ResizeObserver(()=>{if(!cut.modal.hidden&&cut.src){cutSize();cutClamp();cutDraw();}}).observe(cut.stage);
 window.addEventListener('keydown',e=>{
   if(cut.modal.hidden)return;
   if(e.key==='Escape'){e.stopPropagation();cutClose();}
