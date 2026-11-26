@@ -172,15 +172,28 @@ section.panel,.cgroup{scroll-margin-top:64px}
 .btn.rainbow:hover{filter:brightness(1.06)}
 @keyframes rainbowMove{to{background-position:-200% 0}}
 @media (prefers-reduced-motion:reduce){.btn.rainbow{animation:none}}
-.cutbox{width:min(980px,100%)}
-.cutstage{position:relative;height:min(50vh,540px);min-height:240px;border-radius:10px;overflow:hidden;background:rgba(128,128,128,.14);touch-action:none}
+.mbox.cutbox{width:min(1320px,100%);height:100%;overflow:auto;gap:8px}
+.mbox.cutbox>*{flex:none}
+.mbox.cutbox>.cutstage{flex:1 1 320px}
+.cutstage{position:relative;min-height:max(240px,38vh);border-radius:10px;overflow:hidden;background:rgba(128,128,128,.14);touch-action:none}
 .cutstage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .cutstage.t-pan canvas{cursor:grab}.cutstage.t-pan.drag canvas{cursor:grabbing}.cutstage.t-pick canvas{cursor:crosshair}.cutstage.t-erase canvas,.cutstage.t-restore canvas{cursor:none}
-.cuttools,.cutopts{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.cuttools{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between}
+.cuttools .tg{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center}
+.cutopts{margin-top:6px}
+.cutsliders{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px 28px;padding:4px 2px}
+.cutchecks{display:flex;flex-wrap:wrap;gap:10px 26px;padding:10px 4px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.cutchecks .check{font-size:13px}
+.cutacts{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;justify-content:space-between;padding-top:6px}
+.cutbtns2{display:flex;gap:8px;flex-wrap:wrap}
+.cutinfo{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center;justify-content:space-between;font-size:13px}
+.cutinfo .hint{margin:0;flex:1 1 260px}
 .cuttools label.tl{display:inline-flex;gap:4px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:4px 10px;cursor:pointer;font-size:13px}
 .cuttools label.tl:has(input:checked){background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .cuttools label.tl input{position:absolute;opacity:0;pointer-events:none}
-.cutopts label.rg{display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--muted);min-width:130px;flex:1 1 130px}
+.cutopts label.rg{display:grid;grid-template-columns:1fr auto;gap:2px 8px;font-size:12px;color:var(--muted)}
+.cutopts label.rg b{color:var(--ink);font-weight:600;text-align:right}
+.cutopts label.rg input{grid-column:1/-1}
 .cutopts label.rg input{width:100%}
 .cutsw{display:inline-block;width:22px;height:22px;border-radius:6px;border:1px solid var(--line);vertical-align:middle}
 .cutbtns{display:flex;gap:6px;flex-wrap:wrap}
@@ -513,7 +526,7 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
 <div class="modal lbmodal" id="pvModal" hidden role="dialog" aria-modal="true" aria-label="合成預覽大圖">
   <div class="lbbar">
     <div class="pvbgs" role="group" aria-label="預覽底色"><span>底色</span><button type="button" data-pv=""><i style="background:repeating-conic-gradient(#999 0 25%,#fff 0 50%) 0 0/6px 6px"></i>棋盤</button><button type="button" data-pv="w"><i style="background:#fff"></i>白</button><button type="button" data-pv="k"><i style="background:#141414"></i>黑</button><button type="button" data-pv="g"><i style="background:#808080"></i>灰</button><button type="button" data-pv="e"><i style="background:#2fd27a"></i>綠</button></div>
-    <span class="lbzoom"><button class="btn" id="lbOut" type="button" aria-label="縮小">－</button><button class="btn" id="lbFit" type="button">符合畫面</button><button class="btn" id="lbIn" type="button" aria-label="放大">＋</button></span>
+    <span class="lbzoom"><button class="btn" id="lbFit" type="button">恢復大小</button></span>
     <span class="lbinfo" id="lbInfo"></span>
     <button class="btn" id="lbClose" type="button">關閉</button>
   </div>
@@ -540,29 +553,37 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
     <div class="mhead"><span id="cutPos">去背</span>
       <span class="cutbtns"><button class="btn" id="cutCancel" type="button">取消</button><button class="btn primary" id="cutApply" type="button">套用</button><button class="btn" id="cutNext" type="button">套用並下一張</button></span></div>
     <div class="cutstage t-pan" id="cutStage"><canvas id="cutCv" width="1" height="1"></canvas></div>
+    <div class="cutinfo"><span class="hint" id="cutMsg"></span><a id="vidLink" href="https://youtu.be/j1r6EGAP7hk" rel="noopener noreferrer">▶ 去背示範影片</a></div>
     <div class="cuttools" role="group" aria-label="工具">
-      <label class="tl"><input type="radio" name="cutTool" value="pan" checked>✋ 移動</label>
-      <label class="tl"><input type="radio" name="cutTool" value="pick">💧 吸取背景色</label>
-      <label class="tl"><input type="radio" name="cutTool" value="erase">🧽 擦掉</label>
-      <label class="tl"><input type="radio" name="cutTool" value="restore">🖌 補回</label>
-      <button class="btn" id="cutUndo" type="button">復原</button><button class="btn" id="cutRedo" type="button">重做</button>
-      <button class="btn" id="cutOut" type="button" aria-label="縮小">－</button><button class="btn" id="cutFit" type="button">符合畫面</button><button class="btn" id="cutIn" type="button" aria-label="放大">＋</button>
-      <div class="pvbgs" role="group" aria-label="預覽底色"><span>底色</span><button type="button" data-pv=""><i style="background:repeating-conic-gradient(#999 0 25%,#fff 0 50%) 0 0/6px 6px"></i>棋盤</button><button type="button" data-pv="w"><i style="background:#fff"></i>白</button><button type="button" data-pv="k"><i style="background:#141414"></i>黑</button><button type="button" data-pv="g"><i style="background:#808080"></i>灰</button><button type="button" data-pv="e"><i style="background:#2fd27a"></i>綠</button></div>
+      <div class="tg">
+        <label class="tl"><input type="radio" name="cutTool" value="pan" checked>✋ 移動</label>
+        <label class="tl"><input type="radio" name="cutTool" value="pick">💧 吸取背景色</label>
+        <label class="tl"><input type="radio" name="cutTool" value="erase">🧽 擦掉</label>
+        <label class="tl"><input type="radio" name="cutTool" value="restore">🖌 補回</label>
+      </div>
+      <div class="tg">
+        <button class="btn" id="cutUndo" type="button">復原</button><button class="btn" id="cutRedo" type="button">重做</button>
+        <button class="btn" id="cutFit" type="button">恢復大小</button>
+        <div class="pvbgs" role="group" aria-label="預覽底色"><span>底色</span><button type="button" data-pv=""><i style="background:repeating-conic-gradient(#999 0 25%,#fff 0 50%) 0 0/6px 6px"></i>棋盤</button><button type="button" data-pv="w"><i style="background:#fff"></i>白</button><button type="button" data-pv="k"><i style="background:#141414"></i>黑</button><button type="button" data-pv="g"><i style="background:#808080"></i>灰</button><button type="button" data-pv="e"><i style="background:#2fd27a"></i>綠</button></div>
+      </div>
     </div>
-    <div class="cutopts">
-      <span>背景色 <span class="cutsw" id="cutSw"></span> <button class="btn" id="cutAuto" type="button">自動取樣</button></span>
+    <div class="cutopts cutsliders">
       <label class="rg">容許誤差 <b id="cutTolV"></b><input type="range" id="cutTol" min="0" max="100" value="18"></label>
       <label class="rg">邊緣收縮 <b id="cutErV"></b><input type="range" id="cutEr" min="0" max="4" value="0"></label>
       <label class="rg">羽化 <b id="cutFeV"></b><input type="range" id="cutFe" min="0" max="4" value="0"></label>
       <label class="rg">筆刷大小 <b id="cutBrV"></b><input type="range" id="cutBr" min="4" max="120" value="28"></label>
-      <label class="check"><input type="checkbox" id="cutSoft"> 半透明去色（像愛筆思畫）：選取到的背景區域不直接刪掉，改成越接近背景色越透明、其他顏色變半透明（適合線稿，淡色會保留色相）</label>
-      <label class="check"><input type="checkbox" id="cutContig" checked> 只去外圍相連的背景（不動內部同色區域）</label>
     </div>
-    <div class="row">
-      <button class="btn" id="cutAll" type="button">套用到本版全部圖片</button>
-      <label class="check"><input type="checkbox" id="cutAllOv"> 連筆刷一併套用（尺寸相同的圖才會套用）</label>
-      <button class="btn" id="cutRestoreOrig" type="button" hidden>還原成原圖</button>
-      <span class="hint" id="cutMsg" style="flex:1 1 220px"></span>
+    <div class="cutopts cutchecks">
+      <label class="check"><input type="checkbox" id="cutSoft"> 半透明去色</label>
+      <label class="check"><input type="checkbox" id="cutContig" checked> 只去外圍相連的背景（不動內部同色區域）</label>
+      <label class="check"><input type="checkbox" id="cutAllOv"> 套用全部時連筆刷一併套用（尺寸相同的圖才會套用）</label>
+    </div>
+    <div class="cutacts">
+      <span class="cutbg">背景色 <span class="cutsw" id="cutSw"></span> <button class="btn" id="cutAuto" type="button">自動取樣</button></span>
+      <span class="cutbtns2">
+        <button class="btn" id="cutRestoreOrig" type="button" hidden>還原成原圖</button>
+        <button class="btn" id="cutAll" type="button">套用到本版全部圖片</button>
+      </span>
     </div>
   </div>
 </div>
@@ -1045,14 +1066,19 @@ function mzApply(){
   el.mImg.classList.toggle('zoomed',mz.z>1);
 }
 function mzReset(){mz.z=1;mz.x=mz.y=0;mz.drag=null;el.mImg.classList.remove('drag');mzApply();}
-el.mImg.addEventListener('wheel',e=>{
+function mzZoomAt(f,cx,cy){            /* cx,cy: point relative to the picture area's top-left */
   if(!el.mImg.querySelector('img'))return;
-  e.preventDefault();
-  const r=el.mImg.getBoundingClientRect(),px=e.clientX-(r.left+r.width/2),py=e.clientY-(r.top+r.height/2);
-  const z=Math.max(1,Math.min(16,mz.z*Math.exp(-e.deltaY*(e.deltaMode===1?0.05:0.0015))));
+  const r=el.mImg.getBoundingClientRect(),px=cx-r.width/2,py=cy-r.height/2;
+  const z=Math.max(1,Math.min(16,mz.z*f));
   const k=z/mz.z;mz.x=px-(px-mz.x)*k;mz.y=py-(py-mz.y)*k;mz.z=z;
   if(z===1){mz.x=mz.y=0;}
   mzApply();
+}
+el.mImg.addEventListener('wheel',e=>{
+  if(!el.mImg.querySelector('img'))return;
+  e.preventDefault();
+  const r=el.mImg.getBoundingClientRect();
+  mzZoomAt(Math.exp(-e.deltaY*(e.deltaMode===1?0.05:0.0015)),e.clientX-r.left,e.clientY-r.top);
 },{passive:false});
 el.mImg.addEventListener('pointerdown',e=>{
   if(mz.z<=1||e.button>0)return;
@@ -2307,7 +2333,7 @@ cmp.run.addEventListener('click',runCmp);
 cmp.stop.addEventListener('click',()=>{cmpStop=true;cmpMsg('停止中…');});
 
 /* external link: inside the viewer frame a plain link is opened outside by the viewer; standalone, open a new tab so work is not lost */
-try{if(window.top===window.self){$('#extLink').target='_blank';$('#repoLink').target='_blank';}}catch(_){}
+try{if(window.top===window.self){$('#extLink').target='_blank';$('#repoLink').target='_blank';$('#vidLink').target='_blank';}}catch(_){}
 
 /* ---------- init ---------- */
 renderPalette();renderAll();renderComp();renderCombos();
@@ -2479,8 +2505,6 @@ function closeBig(){lb.modal.hidden=true;lb.src=null;}
 cmp.pv.addEventListener('click',openBig);
 $('#cmpPvBig').addEventListener('click',openBig);
 $('#lbClose').addEventListener('click',closeBig);
-$('#lbIn').addEventListener('click',()=>lbZoomAt(1.4,lb.W/2,lb.H/2));
-$('#lbOut').addEventListener('click',()=>lbZoomAt(1/1.4,lb.W/2,lb.H/2));
 $('#lbFit').addEventListener('click',lbReset);
 lb.modal.addEventListener('pointerdown',e=>{if(e.target===lb.modal)closeBig();});
 const lbPt=e=>{const r=lb.box.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top};};
@@ -2691,8 +2715,6 @@ function cutZoomAt(f,cx,cy){
   const z=Math.max(1,Math.min(40,cut.z*f));if(z===cut.z)return;
   const k=z/cut.z;cut.ox=cx-(cx-cut.ox)*k;cut.oy=cy-(cy-cut.oy)*k;cut.z=z;cutClamp();cutDraw();
 }
-$('#cutIn').addEventListener('click',()=>cutZoomAt(1.4,cut.W/2,cut.H/2));
-$('#cutOut').addEventListener('click',()=>cutZoomAt(1/1.4,cut.W/2,cut.H/2));
 $('#cutFit').addEventListener('click',()=>{cut.z=1;cutClamp();cutDraw();});
 const cutPt=e=>{const r=cut.stage.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top};};
 const cutImg=p=>{const s=cutFitScale()*cut.z;return {x:(p.x-cut.ox)/s,y:(p.y-cut.oy)/s,s};};
@@ -2804,6 +2826,30 @@ $('#cutAll').addEventListener('click',e=>{
 $('#btnCut').addEventListener('click',()=>{if(!cur().items.some(i=>i.file)){msg('先加入圖片再去背。',true);return;}openCut(Math.max(0,cur().items.findIndex(i=>i.file)));});
 $('#mCut').addEventListener('click',()=>{const i=mi;closeModal();openCut(i);});
 document.querySelectorAll('.pvbgs button').forEach(b=>b.addEventListener('click',()=>{if(!cut.modal.hidden)cutDraw();}));
+
+/* two-finger pinch zoom (+ two-finger pan) for touch screens */
+function pinchable(el,zoomAt,panBy,start){
+  const ps=new Map();let last=null;
+  const meas=()=>{const a=[...ps.values()],dx=a[1][0]-a[0][0],dy=a[1][1]-a[0][1];return {d:Math.hypot(dx,dy),cx:(a[0][0]+a[1][0])/2,cy:(a[0][1]+a[1][1])/2};};
+  el.addEventListener('pointerdown',e=>{
+    ps.set(e.pointerId,[e.clientX,e.clientY]);
+    if(ps.size>=2){e.stopImmediatePropagation();if(ps.size===2){start();last=meas();}}
+  },true);
+  el.addEventListener('pointermove',e=>{
+    if(!ps.has(e.pointerId))return;ps.set(e.pointerId,[e.clientX,e.clientY]);
+    if(ps.size<2)return;
+    e.stopImmediatePropagation();
+    if(ps.size>2)return;
+    const m=meas();
+    if(last&&last.d>0&&m.d>0){const r=el.getBoundingClientRect();zoomAt(m.d/last.d,m.cx-r.left,m.cy-r.top);panBy(m.cx-last.cx,m.cy-last.cy);}
+    last=m;
+  },true);
+  const up=e=>{ps.delete(e.pointerId);if(ps.size<2)last=null;};
+  el.addEventListener('pointerup',up,true);el.addEventListener('pointercancel',up,true);
+}
+pinchable(cut.stage,cutZoomAt,(dx,dy)=>{cut.ox+=dx;cut.oy+=dy;cutClamp();cutDraw();},()=>{cut.pan=null;if(cut.stroke){cut.stroke=null;$('#cutUndo').click();}cut.stage.classList.remove('drag');});
+pinchable(lb.box,lbZoomAt,(dx,dy)=>{lb.ox+=dx;lb.oy+=dy;lbClamp();lbDraw();},()=>{lbDrag=null;lb.box.classList.remove('drag');});
+pinchable(el.mImg,mzZoomAt,(dx,dy)=>{if(mz.z>1){mz.x+=dx;mz.y+=dy;mzApply();}},()=>{mz.drag=null;el.mImg.classList.remove('drag');});
 
 /* ---------- theme (light / dark) + background particles ---------- */
 const FX={
