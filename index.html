@@ -414,7 +414,6 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
     <div class="row">
       <button class="btn primary" id="btnZip" type="button">下載此版本 ZIP</button>
       <button class="btn" id="btnZipAll" type="button">下載全部版本 ZIP</button>
-      <button class="btn" id="btnJson" type="button">只下載設定檔</button>
       <button class="btn" id="btnCopy" type="button">複製新檔名清單</button>
     </div>
     <label class="check"><input type="checkbox" id="optJson" checked> ZIP 內附設定檔 sprite-namer.json（之後可以重新匯入）</label>
@@ -504,7 +503,7 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
     <details><summary>匯入 PSD 後，遮罩、混合模式、文字不見了？</summary><p>目前不支援圖層遮罩、剪裁遮罩、混合模式、圖層樣式和文字圖層：遮罩與樣式不會套用，混合模式會當一般圖層，沒有像素的圖層會略過。透明度會直接套用到圖層。匯出 PSD 也不會帶回這些設定。</p></details>
   </section>
   <footer class="foot">
-    <a id="extLink" href="https://756y.github.io/ccfolia_character_json_tool/" rel="noopener noreferrer">CCFOLIA Character JSON 產生器</a>
+    <a id="extLink" href="https://756y.github.io/ccfolia_character_json_tool/" rel="noopener noreferrer">更多工具：CCFOLIA Character JSON 產生器</a>
     ・
     <a id="repoLink" href="https://github.com/minyu3108/sprite-namer" rel="noopener noreferrer">專案頁面</a>
   </footer>
@@ -1226,7 +1225,6 @@ async function doExportJson(){
   const ok=await saveBlob('sprite-namer.json',projectBlob(groups,new Map()));
   if(ok)msg('已送出設定檔（全部 '+groups.length+' 個版本）。匯入時可以同時選這個檔案和圖片。');
 }
-$('#btnJson').addEventListener('click',doExportJson);
 async function doExport(all){
   const gs=all?groups:[cur()];
   const folder=all&&groups.length>1&&$('#optFolder').checked;
