@@ -555,6 +555,7 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
       <label class="rg">邊緣收縮 <b id="cutErV"></b><input type="range" id="cutEr" min="0" max="4" value="0"></label>
       <label class="rg">羽化 <b id="cutFeV"></b><input type="range" id="cutFe" min="0" max="4" value="0"></label>
       <label class="rg">筆刷大小 <b id="cutBrV"></b><input type="range" id="cutBr" min="4" max="120" value="28"></label>
+      <label class="check"><input type="checkbox" id="cutSoft"> 半透明去色（像愛筆思畫）：選取到的背景區域不直接刪掉，改成越接近背景色越透明、其他顏色變半透明（適合線稿，淡色會保留色相）</label>
       <label class="check"><input type="checkbox" id="cutContig" checked> 只去外圍相連的背景（不動內部同色區域）</label>
     </div>
     <div class="row">
@@ -2521,8 +2522,42 @@ function cutAlpha(data,w,h,o){
       if(x>0)push(i-1);if(x<w-1)push(i+1);if(i>=w)push(i-w);if(i<n-w)push(i+w);
     }
   }else for(let i=0;i<n;i++)bgm[i]=isBg(i)?1:0;
-  let A=new Uint8Array(n);
-  for(let i=0;i<n;i++)A[i]=bgm[i]?0:data[i*4+3];
+  let A=new Uint8Array(n),sr=null;
+  if(o.soft){
+    /* soft alpha + un-mixed colour for EVERY pixel; the selection decides where it is used */
+    const SA=new Uint8Array(n),SR=new Uint8Array(n*3),bg=o.bg;
+    for(let i=0;i<n;i++){
+      const k=i*4,pa=data[k+3];let a=0;
+      for(let c=0;c<3;c++){
+        const pp=data[k+c],q=bg[c];
+        const v=pp>q?(pp-q)/Math.max(1,255-q):(pp<q?(q-pp)/Math.max(1,q):0);
+        if(v>a)a=v;
+      }
+      SA[i]=Math.round(a*pa);
+      for(let c=0;c<3;c++)SR[i*3+c]=a>0?Math.max(0,Math.min(255,Math.round(bg[c]+(data[k+c]-bg[c])/a))):data[k+c];
+    }
+    /* selection weight 0..255: grown by 邊緣收縮, blurred by 羽化 */
+    let W=new Uint8Array(n);for(let i=0;i<n;i++)W[i]=bgm[i]?255:0;
+    const g1=o.erode|0,g2=o.feather|0;
+    if(g1>0){
+      const T=new Uint8Array(n);
+      for(let y=0;y<h;y++)for(let x=0;x<w;x++){let m=0;const a0=Math.max(0,x-g1),b0=Math.min(w-1,x+g1);for(let k=a0;k<=b0;k++){const v=W[y*w+k];if(v>m)m=v;}T[y*w+x]=m;}
+      for(let y=0;y<h;y++){const a0=Math.max(0,y-g1),b0=Math.min(h-1,y+g1);for(let x=0;x<w;x++){let m=0;for(let k=a0;k<=b0;k++){const v=T[k*w+x];if(v>m)m=v;}W[y*w+x]=m;}}
+    }
+    if(g2>0){
+      const T=new Uint8Array(n);
+      for(let y=0;y<h;y++)for(let x=0;x<w;x++){let t=0,c=0;const a0=Math.max(0,x-g2),b0=Math.min(w-1,x+g2);for(let k=a0;k<=b0;k++){t+=W[y*w+k];c++;}T[y*w+x]=t/c;}
+      for(let y=0;y<h;y++){const a0=Math.max(0,y-g2),b0=Math.min(h-1,y+g2);for(let x=0;x<w;x++){let t=0,c=0;for(let k=a0;k<=b0;k++){t+=T[k*w+x];c++;}W[y*w+x]=t/c;}}
+    }
+    sr=new Uint8Array(n*3);
+    for(let i=0;i<n;i++){
+      const k=i*4,pa=data[k+3],w1=W[i]/255;
+      A[i]=Math.round(pa+(SA[i]-pa)*w1);
+      for(let c=0;c<3;c++)sr[i*3+c]=W[i]?SR[i*3+c]:data[k+c];
+    }
+    A.rgb=sr;A.sa=SA;A.sr=SR;
+    return A;
+  }else for(let i=0;i<n;i++)A[i]=bgm[i]?0:data[i*4+3];
   const r1=o.erode|0,r2=o.feather|0;
   if(r1>0){
     const T=new Uint8Array(n);
@@ -2534,6 +2569,7 @@ function cutAlpha(data,w,h,o){
     for(let y=0;y<h;y++)for(let x=0;x<w;x++){let s=0,c=0;const a=Math.max(0,x-r2),b=Math.min(w-1,x+r2);for(let k=a;k<=b;k++){s+=A[y*w+k];c++;}T[y*w+x]=s/c;}
     for(let y=0;y<h;y++){const a=Math.max(0,y-r2),b=Math.min(h-1,y+r2);for(let x=0;x<w;x++){let s=0,c=0;for(let k=a;k<=b;k++){s+=T[k*w+x];c++;}A[y*w+x]=s/c;}}
   }
+  if(sr)A.rgb=sr;
   return A;
 }
 /* Guess the background colour from the four corners (most common among them). */
@@ -2550,7 +2586,7 @@ function cutGuessBg(data,w,h){
 }
 const cut={modal:$('#cutModal'),cv:$('#cutCv'),stage:$('#cutStage'),msg:$('#cutMsg'),it:null,w:0,h:0,src:null,res:null,rctx:null,out:null,
   autoA:null,ov:null,undo:[],redo:[],bg:[255,255,255],bgAuto:true,tool:'pan',z:1,ox:0,oy:0,W:1,H:1,d:1,mx:-1e4,my:-1e4,raf:0,stroke:null,pan:null};
-const cutOpts=()=>({bg:cut.bg,tol:+$('#cutTol').value,contig:$('#cutContig').checked,erode:+$('#cutEr').value,feather:+$('#cutFe').value});
+const cutOpts=()=>({bg:cut.bg,tol:+$('#cutTol').value,contig:$('#cutContig').checked,erode:+$('#cutEr').value,feather:+$('#cutFe').value,soft:$('#cutSoft').checked});
 function cutLabels(){
   $('#cutTolV').textContent=$('#cutTol').value;$('#cutErV').textContent=$('#cutEr').value+' px';$('#cutFeV').textContent=$('#cutFe').value+' px';$('#cutBrV').textContent=$('#cutBr').value+' px';
   $('#cutSw').style.background='rgb('+cut.bg.join(',')+')';
@@ -2583,12 +2619,17 @@ const cutDraw=()=>{if(!cut.raf)cut.raf=requestAnimationFrame(cutDrawNow);};
 function cutWrite(x0,y0,x1,y1){
   const {w,out,autoA,ov,src}=cut,d=out.data,sd=src.data;
   for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){
-    const i=y*w+x,m=ov[i];d[i*4+3]=m===1?0:(m===2?sd[i*4+3]:autoA[i]);
+    const i=y*w+x,m=ov[i],S=cut.softRGB;
+    if(m===2){d[i*4]=sd[i*4];d[i*4+1]=sd[i*4+1];d[i*4+2]=sd[i*4+2];d[i*4+3]=sd[i*4+3];}
+    else if(m===1&&S){const j=i*3;d[i*4]=autoA.sr[j];d[i*4+1]=autoA.sr[j+1];d[i*4+2]=autoA.sr[j+2];d[i*4+3]=autoA.sa[i]*sd[i*4+3]/255;}
+    else if(m===1){d[i*4]=sd[i*4];d[i*4+1]=sd[i*4+1];d[i*4+2]=sd[i*4+2];d[i*4+3]=0;}
+    else{const j=i*3;d[i*4]=S?S[j]:sd[i*4];d[i*4+1]=S?S[j+1]:sd[i*4+1];d[i*4+2]=S?S[j+2]:sd[i*4+2];d[i*4+3]=autoA[i];}
   }
 }
 function cutRecompute(){
   if(!cut.src)return;
-  cut.autoA=cutAlpha(cut.src.data,cut.w,cut.h,cutOpts());
+  const o=cutOpts();
+  cut.autoA=cutAlpha(cut.src.data,cut.w,cut.h,o);cut.softRGB=cut.autoA.rgb||null;
   cutWrite(0,0,cut.w-1,cut.h-1);
   cut.rctx.putImageData(cut.out,0,0);cutDraw();
 }
@@ -2613,10 +2654,10 @@ async function openCut(idx){
   cut.ov=new Uint8Array(cut.w*cut.h);cut.undo=[];cut.redo=[];
   const st=it.cutState;
   if(st){
-    $('#cutTol').value=st.tol;$('#cutEr').value=st.er;$('#cutFe').value=st.fe;$('#cutContig').checked=st.contig;
+    $('#cutTol').value=st.tol;$('#cutEr').value=st.er;$('#cutFe').value=st.fe;$('#cutContig').checked=st.contig;$('#cutSoft').checked=!!st.soft;
     cut.bg=st.bg.slice();cut.bgAuto=st.bgAuto;
     if(st.pack&&st.w===cut.w&&st.h===cut.h)cut.ov=cutUnpack(st.pack,cut.w*cut.h);
-  }else if(cut.bgAuto)cut.bg=cutGuessBg(cut.src.data,cut.w,cut.h);
+  }else{$('#cutSoft').checked=false;if(cut.bgAuto)cut.bg=cutGuessBg(cut.src.data,cut.w,cut.h);}
   cut.z=1;cutSize();cutClamp();cutLabels();
   $('#cutPos').textContent='去背 — 第 '+(idx+1)+' / '+g.items.length+' 張';
   $('#cutNext').hidden=idx>=g.items.length-1;
@@ -2633,13 +2674,14 @@ function cutPack(ov){
   r.push(v,c);return Int32Array.from(r);
 }
 function cutUnpack(pk,n){const o=new Uint8Array(n);let i=0;for(let k=0;k<pk.length;k+=2){const v=pk[k],c=pk[k+1];if(v)o.fill(v,i,i+c);i+=c;}return o;}
-function cutSnap(ov,w,h,opts,bgAuto){return {pack:cutPack(ov),w,h,tol:opts.tol,er:opts.erode,fe:opts.feather,contig:opts.contig,bg:opts.bg.slice(),bgAuto};}
+function cutSnap(ov,w,h,opts,bgAuto){return {pack:cutPack(ov),w,h,tol:opts.tol,soft:!!opts.soft,er:opts.erode,fe:opts.feather,contig:opts.contig,bg:opts.bg.slice(),bgAuto};}
 function cutPushUndo(){cut.undo.push(cut.ov.slice());if(cut.undo.length>10)cut.undo.shift();cut.redo=[];}
 function cutRestoreOv(a){cut.ov=a;cutWrite(0,0,cut.w-1,cut.h-1);cut.rctx.putImageData(cut.out,0,0);cutDraw();}
 $('#cutUndo').addEventListener('click',()=>{if(!cut.undo.length)return;cut.redo.push(cut.ov.slice());cutRestoreOv(cut.undo.pop());});
 $('#cutRedo').addEventListener('click',()=>{if(!cut.redo.length)return;cut.undo.push(cut.ov.slice());cutRestoreOv(cut.redo.pop());});
 ['cutTol','cutEr','cutFe','cutBr'].forEach(id=>$('#'+id).addEventListener('input',()=>{if(id==='cutBr'){cutLabels();cutDraw();}else cutSoon();}));
 $('#cutContig').addEventListener('change',cutSoon);
+$('#cutSoft').addEventListener('change',cutSoon);
 $('#cutAuto').addEventListener('click',()=>{cut.bgAuto=true;cut.bg=cutGuessBg(cut.src.data,cut.w,cut.h);cutSoon();});
 document.querySelectorAll('input[name="cutTool"]').forEach(r=>r.addEventListener('change',()=>{
   cut.tool=document.querySelector('input[name="cutTool"]:checked').value;
@@ -2732,10 +2774,21 @@ $('#cutAll').addEventListener('click',e=>{
       try{
         const id=await cutLoad(it.origFile||it.file),oo=Object.assign({},o);
         if(cut.bgAuto)oo.bg=cutGuessBg(id.data,id.width,id.height);
-        const A=cutAlpha(id.data,id.width,id.height,oo),d=id.data;
-        if(it===curIt&&ov){for(let i=0;i<A.length;i++){const v=ov[i];if(v===1)A[i]=0;else if(v===2)A[i]=d[i*4+3];}}
-        else if(useOv){if(id.width===ow&&id.height===oh){for(let i=0;i<A.length;i++){const v=ov[i];if(v===1)A[i]=0;else if(v===2)A[i]=d[i*4+3];}}else skipOv++;}
-        for(let i=0;i<A.length;i++)d[i*4+3]=A[i];
+        const d=id.data,A=cutAlpha(d,id.width,id.height,oo),sr=A.rgb||null;
+        let ovMask=null;
+        if(it===curIt&&ov)ovMask=ov;
+        else if(useOv){if(id.width===ow&&id.height===oh)ovMask=ov;else skipOv++;}
+        for(let i=0;i<A.length;i++){
+          const v=ovMask?ovMask[i]:0,k=i*4;
+          if(v===2)continue;                      /* restored: keep the original pixel */
+          if(v===1){
+            if(sr){const j=i*3,pa=d[k+3];d[k]=A.sr[j];d[k+1]=A.sr[j+1];d[k+2]=A.sr[j+2];d[k+3]=A.sa[i]*pa/255;}
+            else d[k+3]=0;
+            continue;
+          }
+          if(sr){d[k]=sr[i*3];d[k+1]=sr[i*3+1];d[k+2]=sr[i*3+2];}
+          d[k+3]=A[i];
+        }
         const c=document.createElement('canvas');c.width=id.width;c.height=id.height;c.getContext('2d').putImageData(id,0,0);
         const b=await cutBlob(c);if(!b)throw 0;
         const old=cutReplace(it,b);if(old)setTimeout(()=>URL.revokeObjectURL(old),1500);
