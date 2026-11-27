@@ -171,7 +171,6 @@ section.panel,.cgroup{scroll-margin-top:64px}
 .clwarn{color:var(--warn);cursor:help;display:inline-flex;vertical-align:middle}
 .ic{flex:none;vertical-align:-3px}
 .btn.rainbow{color:#1b1230;font-weight:700;border:0;background:linear-gradient(90deg,#ff8a8a,#ffc46b,#f6f07a,#8fe3a0,#7cc8ff,#a99bff,#e79bff,#ff8a8a);background-size:200% 100%;animation:rainbowMove 6s linear infinite;text-shadow:0 1px 0 rgba(255,255,255,.35)}
-.btn.rainbow:hover{filter:brightness(1.06)}
 @keyframes rainbowMove{to{background-position:-200% 0}}
 @media (prefers-reduced-motion:reduce){.btn.rainbow{animation:none}}
 .mbox.cutbox{width:min(1320px,100%);height:100%;overflow:auto;gap:8px}
@@ -217,6 +216,7 @@ section.panel,.cgroup{scroll-margin-top:64px}
 .cmbth{width:56px;height:84px;object-fit:contain;border-radius:6px;flex:0 0 auto;background:repeating-conic-gradient(color-mix(in srgb,var(--ink) 22%,var(--panel)) 0 25%,color-mix(in srgb,var(--ink) 7%,var(--panel)) 0 50%) 0 0/10px 10px}
 .cmbname{flex:1 1 140px;min-width:0}
 .cmbrow .btn{min-height:34px;padding:5px 10px}
+.cmbth{cursor:zoom-in}
 .vbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:10px;margin:0 -16px;padding:8px 16px;background:color-mix(in srgb,var(--bg) 88%,transparent);border-bottom:1px solid var(--line)}
 .vlabel{font-weight:600;font-size:13px;color:var(--muted);flex:0 0 auto}
 .tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;flex:1 1 0;min-width:0}
@@ -421,6 +421,29 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
 .stylemenu .smi[aria-checked="true"] .ck{visibility:visible}
 .stylemenu .smi[aria-checked="true"]{font-weight:600}
 .stylemenu .sep{height:1px;background:var(--line);margin:4px 2px}
+
+/* ===== details pass: radius scale, tabular numbers, hover states ===== */
+:root{--r-ctl:8px;--r-card:10px;--r-panel:12px}
+:root[data-style="studio"]{--r-ctl:6px;--r-card:8px;--r-panel:8px}
+:root[data-style="paper"]{--r-ctl:5px;--r-card:6px;--r-panel:6px}
+:root[data-style="sticker"]{--r-ctl:10px;--r-card:14px;--r-panel:16px}
+:root[data-style="plain"]{--r-ctl:8px;--r-card:10px;--r-panel:12px}
+/* pills that are really controls follow the control radius of the style */
+:root[data-style] .themebtn,:root[data-style] .pvbgs button,:root[data-style] .cuttools label.tl,:root[data-style] .cutbg label.tl{border-radius:var(--r-ctl)}
+:root[data-style] .chip{border-radius:var(--r-ctl)}
+:root[data-style] .chip .cx{border-radius:calc(var(--r-ctl) - 3px)}
+:root[data-style] .ctop .x,:root[data-style] .xbtn{border-radius:calc(var(--r-ctl) - 2px)}
+/* numbers keep one width so they do not jump when they change */
+.ctop .num,.preview,.cname,.mname,.cgsum b,.cutopts label.rg b,.cutinfo,#count{font-variant-numeric:tabular-nums}
+/* a quiet press, a light hover on tabs and the group list */
+.btn:active,.themebtn:active,.tab:active,.segb:active{transform:translateY(1px)}
+:root[data-style="sticker"] .tab:active,:root[data-style="sticker"] .segb:active{transform:translate(1px,1px)}
+.tab:not(.on):hover,.segb:not(.on):hover{background:color-mix(in srgb,var(--ink) 7%,var(--panel))}
+.sitem:not(.on):hover{background:color-mix(in srgb,var(--ink) 6%,var(--panel))}
+/* a primary button already has the accent border, so its hover is a shade of the fill */
+:root[data-style] .btn.primary:hover{background:color-mix(in srgb,var(--accent) 88%,var(--ink));border-color:color-mix(in srgb,var(--accent) 88%,var(--ink))}
+:root[data-style="sticker"] .btn.primary:hover{border-color:var(--edge)}
+.stylemenu{border-radius:var(--r-panel)}
 </style>
 </head>
 <body>
@@ -456,11 +479,10 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
     </div>
     <div class="row">
       <button class="btn" id="btnSyncDesc" type="button">把這個版本的形容同步到其他版本</button>
-      <label class="check"><input type="checkbox" id="syncBlank"> 只補空白的，不蓋掉已填的</label>
+      <label class="check"><input type="checkbox" id="syncBlank"> 只補空白的名稱</label>
     </div>
     <div class="row">
-      <button class="btn" id="btnImport" type="button">匯入先前的匯出</button>
-      <span class="hint">ZIP 或 .json，版本、名字、格式、順序、形容都會還原。</span>
+      <button class="btn" id="btnImport" type="button" title="ZIP 或 .json，版本、名字、格式、順序、形容都會還原。">匯入先前的匯出</button>
     </div>
     <input type="file" id="fileImport" accept=".zip,.json,application/zip,application/json,image/*" multiple hidden>
     <p class="hint">同一個角色可以有好幾個版本，例如「本體」和「戴帽子」，每個版本放自己的一批圖。只有一個版本的話，可以直接跳到第 2 步。</p>
@@ -476,7 +498,7 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
       </div>
     </div>
     <div class="pvbgs" role="group" aria-label="預覽底色"><span>底色</span><button type="button" data-pv="" title="棋盤" aria-label="棋盤"><i style="background:repeating-conic-gradient(#999 0 25%,#fff 0 50%) 0 0/6px 6px"></i></button><button type="button" data-pv="w" title="白" aria-label="白"><i style="background:#fff"></i></button><button type="button" data-pv="k" title="黑" aria-label="黑"><i style="background:#141414"></i></button><button type="button" data-pv="g" title="灰" aria-label="灰"><i style="background:#808080"></i></button><button type="button" data-pv="e" title="綠" aria-label="綠"><i style="background:#2fd27a"></i></button></div>
-    <p class="hint">拖曳卡片上方的條列來改順序，編號會即時變動；點圖片可放大並輸入形容（放大後可用滾輪縮放、拖曳移動）。</p>
+    <p class="hint">拖曳卡片上方的條列來改順序，編號會即時變動；點圖片可放大並輸入形容。</p>
     <div class="row">
       <label class="check"><input type="checkbox" id="optDesc" checked> 加入圖片時，從檔名偵測形容</label>
       <label class="check"><input type="checkbox" id="optName" checked> 角色名字是空的時，從檔名偵測名字</label>
@@ -571,7 +593,6 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
             <div class="pvbgs" role="group" aria-label="預覽底色"><span>底色</span><button type="button" data-pv="" title="棋盤" aria-label="棋盤"><i style="background:repeating-conic-gradient(#999 0 25%,#fff 0 50%) 0 0/6px 6px"></i></button><button type="button" data-pv="w" title="白" aria-label="白"><i style="background:#fff"></i></button><button type="button" data-pv="k" title="黑" aria-label="黑"><i style="background:#141414"></i></button><button type="button" data-pv="g" title="灰" aria-label="灰"><i style="background:#808080"></i></button><button type="button" data-pv="e" title="綠" aria-label="綠"><i style="background:#2fd27a"></i></button></div>
             <div class="cpv" title="點一下看大圖"><canvas id="cmpPv" width="1" height="1"></canvas></div>
             <div class="hint" id="cmpPvInfo"></div>
-            <button class="btn" id="cmpPvBig" type="button">看大圖</button>
           </aside>
         </div>
         <section class="panel" aria-label="組合清單">
@@ -686,8 +707,8 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
       <label class="rg">筆刷大小 <b id="cutBrV"></b><input type="range" id="cutBr" min="4" max="120" value="28"></label>
     </div>
     <div class="cutopts cutchecks">
-      <label class="check"><input type="checkbox" id="cutSoft"> 半透明去色</label>
-      <label class="check"><input type="checkbox" id="cutContig" checked> 只去外圍相連的背景（不動內部同色區域）</label>
+      <label class="check"><input type="checkbox" id="cutSoft" checked> 半透明去色</label>
+      <label class="check"><input type="checkbox" id="cutContig"> 只去外圍相連的背景（不動內部同色區域）</label>
     </div>
   </div>
 </div>
@@ -1687,12 +1708,12 @@ function addCmpGroup(name,mode,role){
 }
 $('#cmpAddBody').addEventListener('click',()=>addCmpGroup('身體','single','fixed'));
 $('#cmpAddFace').addEventListener('click',()=>addCmpGroup('表情','single','item'));
-$('#cmpAddCloth').addEventListener('click',()=>addCmpGroup('衣服','single','version'));
+$('#cmpAddCloth').addEventListener('click',()=>addCmpGroup('衣服','single','item'));
 $('#cmpAddEye').addEventListener('click',()=>addCmpGroup('眼睛','single','item'));
 $('#cmpAddBrow').addEventListener('click',()=>addCmpGroup('眉毛','single','item'));
 $('#cmpAddMouth').addEventListener('click',()=>addCmpGroup('嘴','single','item'));
-$('#cmpAddAcc').addEventListener('click',()=>addCmpGroup('配件','multi','version'));
-$('#cmpAddBlank').addEventListener('click',()=>addCmpGroup('','single','fixed'));
+$('#cmpAddAcc').addEventListener('click',()=>addCmpGroup('配件','multi','item'));
+$('#cmpAddBlank').addEventListener('click',()=>addCmpGroup('','single','item'));
 
 /* blend mode per layer: 'normal' or 'multiply' (色彩增值) */
 const groupBlend=g=>{if(!g.layers.length)return 'normal';const m=g.layers.filter(l=>l.blend==='multiply').length;return m===0?'normal':(m===g.layers.length?'multiply':'mixed');};
@@ -1986,9 +2007,7 @@ async function loadPsdLib(){
 }
 /* turn the ag-psd tree into groups; pure, no canvas. psd.children is bottom→top, our lists are top→bottom */
 function guessRole(name){
-  if(/眼|眉|嘴|口|表情|eye|brow|mouth|face|expr/i.test(name))return 'item';
-  if(/衣|服|帽|配件|飾|髮|cloth|outfit|hat|acc|hair/i.test(name))return 'version';
-  return 'fixed';
+  return /身體|身体|本體|本体|body/i.test(name)?'fixed':'item';
 }
 function psdCollect(psd){
   const warns=new Set(),out=[];let skipped=0;
@@ -2237,6 +2256,14 @@ function comboIds(c){
   }
   return out;
 }
+function comboPreviewIds(c){
+  const out=[];
+  for(const g of comp.groups){
+    const have=new Set(g.layers.map(l=>l.id)),s=g.role==='version'?null:c.sel[g.id];
+    out.push(...(s?s.filter(id=>have.has(id)):curSel(g)));
+  }
+  return out;
+}
 const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function groupSummary(g){
   const n=g.layers.length,nm=l=>l.name.trim()||'（未命名）';
@@ -2320,9 +2347,9 @@ function renderCombos(){
     const row=document.createElement('div');row.className='cmbrow';row.dataset.id=c.id;
     row.innerHTML='<span class="grip" aria-hidden="true">⠿</span><img class="cmbth" alt="">'+
       '<input type="text" class="cmbname" aria-label="組合名稱" autocomplete="off">'+
-      '<button class="btn cmbapply" type="button">套用</button><button class="btn cmbupd" type="button">更新</button>'+
+      '<button class="btn cmbapply" type="button">套用</button><button class="btn cmbbig" type="button" title="放大看這個組合，不會改變上面的勾選" aria-label="放大">＋</button><button class="btn cmbupd" type="button">更新</button>'+
       '<button class="xbtn cmbdel" type="button" aria-label="刪除這個組合">×</button>';
-    row.querySelector('.cmbth').src=c.th;
+    row.querySelector('.cmbth').src=c.th;row.querySelector('.cmbth').title='點一下放大';
     row.querySelector('.cmbname').value=c.name;
     box.appendChild(row);
   }
@@ -2357,6 +2384,7 @@ $('#cmbList').addEventListener('click',e=>{
   const row=e.target.closest('.cmbrow');if(!row)return;
   const c=comp.combos.find(x=>x.id===row.dataset.id);if(!c)return;
   if(e.target.closest('.cmbapply')){applyCombo(c);cmpMsg('已套用「'+c.name+'」到上面的勾選。');}
+  else if(e.target.closest('.cmbbig,.cmbth')){openBigIds(comboPreviewIds(c),'組合「'+(c.name.trim()||'未命名')+'」');}
   else if(e.target.closest('.cmbupd')){c.sel=snapshotSel();c.th=smallComposite();renderCombos();cmpMsg('已用目前的勾選更新「'+c.name+'」。');}
   else if(e.target.closest('.cmbdel')){comp.combos=comp.combos.filter(x=>x!==c);renderCombos();renderPlan();}
 });
@@ -2588,18 +2616,22 @@ function lbReset(){lb.z=1;lbClamp();lbDraw();}
 function lbShow(src,w,h,note){
   lb.src=src;lb.sw=w;lb.sh=h;lb.note=note;lb.z=1;lbSize();lbClamp();lbDraw();
 }
-async function openBig(){
+async function openBigIds(idList,label){
   const d=cmpDims();
   if(!d){cmpMsg('還沒有圖層，沒有可以放大的預覽。',true);return;}
   lb.modal.hidden=false;lb.src=null;lb.info.textContent='繪製中…';
   const sc=Math.min(1,4096/Math.max(d.w,d.h));
   const w=Math.max(1,Math.round(d.w*sc)),h=Math.max(1,Math.round(d.h*sc));
   const cv=document.createElement('canvas');cv.width=w;cv.height=h;const ctx=cv.getContext('2d');
-  const ids=new Set();comp.groups.forEach(g=>curSel(g).forEach(id=>ids.add(id)));
+  const ids=new Set(idList);
   try{for(const l of layersInOrder(ids))dl(ctx,l,await fullBmp(l),w,h);}
   catch(_){for(const l of layersInOrder(ids))dl(ctx,l,l.prev,w,h);}
   if(lb.modal.hidden)return;
-  lbShow(cv,w,h,'組合預覽 '+d.w+'×'+d.h+' px'+(sc<1?'（縮小顯示）':''));
+  lbShow(cv,w,h,label+' '+d.w+'×'+d.h+' px'+(sc<1?'（縮小顯示）':''));
+}
+function openBig(){
+  const ids=[];comp.groups.forEach(g=>curSel(g).forEach(id=>ids.push(id)));
+  return openBigIds(ids,'組合預覽');
 }
 async function openLayerBig(l){
   lb.modal.hidden=false;lb.src=null;lb.info.textContent='讀取中…';
@@ -2610,7 +2642,6 @@ async function openLayerBig(l){
 }
 function closeBig(){lb.modal.hidden=true;lb.src=null;}
 cmp.pv.addEventListener('click',openBig);
-$('#cmpPvBig').addEventListener('click',openBig);
 $('#lbClose').addEventListener('click',closeBig);
 lb.modal.addEventListener('pointerdown',e=>{if(e.target===lb.modal)closeBig();});
 const lbPt=e=>{const r=lb.box.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top};};
@@ -2787,7 +2818,7 @@ async function openCut(idx){
     $('#cutTol').value=st.tol;$('#cutEr').value=st.er;$('#cutFe').value=st.fe;$('#cutContig').checked=st.contig;$('#cutSoft').checked=!!st.soft;
     cut.bg=st.bg.slice();cut.bgAuto=st.bgAuto;
     if(st.pack&&st.w===cut.w&&st.h===cut.h)cut.ov=cutUnpack(st.pack,cut.w*cut.h);
-  }else{$('#cutSoft').checked=false;if(cut.bgAuto)cut.bg=cutGuessBg(cut.src.data,cut.w,cut.h);}
+  }else{$('#cutSoft').checked=true;$('#cutContig').checked=false;if(cut.bgAuto)cut.bg=cutGuessBg(cut.src.data,cut.w,cut.h);}
   cut.z=1;cutSize();cutClamp();cutLabels();
   $('#cutPos').textContent='去背 — 第 '+(idx+1)+' / '+g.items.length+' 張';
   $('#cutNext').hidden=idx>=g.items.length-1;
