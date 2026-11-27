@@ -177,20 +177,22 @@ section.panel,.cgroup{scroll-margin-top:64px}
 .mbox.cutbox>.cutstage{flex:1 1 320px}
 .cutstage{position:relative;min-height:max(240px,38vh);border-radius:10px;overflow:hidden;background:rgba(128,128,128,.14);touch-action:none}
 .cutstage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
-.cutstage.t-pan canvas{cursor:grab}.cutstage.t-pan.drag canvas{cursor:grabbing}.cutstage.t-pick canvas{cursor:crosshair}.cutstage.t-erase canvas,.cutstage.t-restore canvas{cursor:none}
+.cutstage.drag canvas{cursor:grabbing!important}.cutstage.t-pan canvas{cursor:grab}.cutstage.t-pan.drag canvas{cursor:grabbing}.cutstage.t-pick canvas{cursor:crosshair}.cutstage.t-erase canvas,.cutstage.t-restore canvas{cursor:none}
 .cuttools{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between}
 .cuttools .tg{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center}
 .cutopts{margin-top:6px}
 .cutsliders{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px 28px;padding:4px 2px}
-.cutchecks{display:flex;flex-wrap:wrap;gap:10px 26px;padding:10px 4px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.cutchecks{display:flex;flex-wrap:wrap;gap:10px 26px;padding:10px 4px 2px;border-top:1px solid var(--line)}
 .cutchecks .check{font-size:13px}
-.cutacts{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;justify-content:space-between;padding-top:6px}
-.cutbtns2{display:flex;gap:8px;flex-wrap:wrap}
+.cutacts{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;justify-content:space-between}
+.cutbg{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.cutbg label.tl{position:relative}
+.cutbtns2{display:flex;gap:8px 12px;flex-wrap:wrap;align-items:center}
 .cutinfo{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center;justify-content:space-between;font-size:13px}
 .cutinfo .hint{margin:0;flex:1 1 260px}
-.cuttools label.tl{display:inline-flex;gap:4px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:4px 10px;cursor:pointer;font-size:13px}
-.cuttools label.tl:has(input:checked){background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-.cuttools label.tl input{position:absolute;opacity:0;pointer-events:none}
+.cuttools label.tl,.cutbg label.tl{display:inline-flex;gap:4px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:4px 10px;cursor:pointer;font-size:13px}
+.cuttools label.tl:has(input:checked),.cutbg label.tl:has(input:checked){background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.cuttools label.tl input,.cutbg label.tl input{position:absolute;opacity:0;pointer-events:none}
 .cutopts label.rg{display:grid;grid-template-columns:1fr auto;gap:2px 8px;font-size:12px;color:var(--muted)}
 .cutopts label.rg b{color:var(--ink);font-weight:600;text-align:right}
 .cutopts label.rg input{grid-column:1/-1}
@@ -273,9 +275,9 @@ textarea{width:100%;min-height:120px;background:var(--bg);border:1px solid var(-
 .mnav .btn{flex:1}
 /* preview backdrop switch: checker / white / black / gray / green, applied to every transparent-image preview */
 .pvbgs{display:flex;align-items:center;gap:4px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
-.pvbgs button{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:3px 10px;cursor:pointer;font:inherit;font-size:12px;min-height:28px}
+.pvbgs button{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:6px 9px;cursor:pointer;font:inherit;font-size:12px;min-height:28px;line-height:0}
 .pvbgs button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-.pvbgs i{display:inline-block;width:10px;height:10px;border-radius:50%;border:1px solid #8888;margin-right:4px;vertical-align:-1px}
+.pvbgs i{display:inline-block;width:14px;height:14px;border-radius:50%;border:1px solid #8888;margin:0;vertical-align:middle}
 :root{--pvc:none}
 body[data-pv="w"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbimg-x){background:#fff}
 body[data-pv="k"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbimg-x){background:#141414}
@@ -369,7 +371,7 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
         <button class="btn" id="btnCut" type="button">去背</button>
       </div>
     </div>
-    <div class="pvbgs" role="group" aria-label="預覽底色"><span>底色</span><button type="button" data-pv=""><i style="background:repeating-conic-gradient(#999 0 25%,#fff 0 50%) 0 0/6px 6px"></i>棋盤</button><button type="button" data-pv="w"><i style="background:#fff"></i>白</button><button type="button" data-pv="k"><i style="background:#141414"></i>黑</button><button type="button" data-pv="g"><i style="background:#808080"></i>灰</button><button type="button" data-pv="e"><i style="background:#2fd27a"></i>綠</button></div>
+    <div class="pvbgs" role="group" aria-label="預覽底色"><span>底色</span><button type="button" data-pv="" title="棋盤" aria-label="棋盤"><i style="background:repeating-conic-gradient(#999 0 25%,#fff 0 50%) 0 0/6px 6px"></i></button><button type="button" data-pv="w" title="白" aria-label="白"><i style="background:#fff"></i></button><button type="button" data-pv="k" title="黑" aria-label="黑"><i style="background:#141414"></i></button><button type="button" data-pv="g" title="灰" aria-label="灰"><i style="background:#808080"></i></button><button type="button" data-pv="e" title="綠" aria-label="綠"><i style="background:#2fd27a"></i></button></div>
     <p class="hint">拖曳卡片上方的條列來改順序，編號會即時變動；點圖片可放大並輸入形容（放大後可用滾輪縮放、拖曳移動）。</p>
     <div class="row">
       <label class="check"><input type="checkbox" id="optDesc" checked> 加入圖片時，從檔名偵測形容</label>
@@ -462,7 +464,7 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
           <div class="cgroups" id="cmpGroups"></div>
           <aside class="comppv" aria-label="預覽">
             <strong>預覽</strong>
-            <div class="pvbgs" role="group" aria-label="預覽底色"><span>底色</span><button type="button" data-pv=""><i style="background:repeating-conic-gradient(#999 0 25%,#fff 0 50%) 0 0/6px 6px"></i>棋盤</button><button type="button" data-pv="w"><i style="background:#fff"></i>白</button><button type="button" data-pv="k"><i style="background:#141414"></i>黑</button><button type="button" data-pv="g"><i style="background:#808080"></i>灰</button><button type="button" data-pv="e"><i style="background:#2fd27a"></i>綠</button></div>
+            <div class="pvbgs" role="group" aria-label="預覽底色"><span>底色</span><button type="button" data-pv="" title="棋盤" aria-label="棋盤"><i style="background:repeating-conic-gradient(#999 0 25%,#fff 0 50%) 0 0/6px 6px"></i></button><button type="button" data-pv="w" title="白" aria-label="白"><i style="background:#fff"></i></button><button type="button" data-pv="k" title="黑" aria-label="黑"><i style="background:#141414"></i></button><button type="button" data-pv="g" title="灰" aria-label="灰"><i style="background:#808080"></i></button><button type="button" data-pv="e" title="綠" aria-label="綠"><i style="background:#2fd27a"></i></button></div>
             <div class="cpv" title="點一下看大圖"><canvas id="cmpPv" width="1" height="1"></canvas></div>
             <div class="hint" id="cmpPvInfo"></div>
             <button class="btn" id="cmpPvBig" type="button">看大圖</button>
@@ -513,6 +515,7 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
     <h2>常見問題</h2>
     <details><summary>圖片很大或很多，網頁會卡嗎？</summary><p>網頁只會解碼小尺寸預覽，一般不會卡。合成時才會用到原尺寸，所以建議畫布不要超過 2500×2500，圖層很多時一次不要輸出太多張（超過 200 張會提醒，超過 600 張不給輸出）。手機記憶體較少，大圖建議在電腦上做。</p></details>
     <details><summary>「版本」和「差分」有什麼不同？</summary><p>版本是命名分頁裡的一個分頁（例如制服、便服、戴帽子）；差分是版本裡的每一張圖（例如笑、怒、驚）。合成時，圖層組的「用法」就是決定這組要分成版本、分成差分，還是每張都一樣。總張數＝版本數 × 差分數。</p></details>
+    <details><summary>去背時勾了「連筆刷一併套用」，為什麼有些圖沒有套用？</summary><p>筆刷是依照圖片上的位置記錄的，所以只有尺寸（寬×高）和目前這張圖完全相同的圖才能套用。尺寸不同的圖只會套用自動去背，不會套用筆刷。</p></details>
     <details><summary>PSD 匯入後只有一個圖層，或沒有分組？</summary><ul><li>愛筆思畫要選「PSD (Preserved Layers)」（保留圖層）匯出，選合併版就只有一層。</li><li>只有放在資料夾裡的圖層才會變成一個圖層組；沒放資料夾的圖層會歸到「未分組圖層」。</li><li>匯入後的「用法」是依名稱猜的，請逐組檢查。</li></ul></details>
     <details><summary>匯入 PSD 後，遮罩、混合模式、文字不見了？</summary><p>目前不支援圖層遮罩、剪裁遮罩、混合模式、圖層樣式和文字圖層：遮罩與樣式不會套用，混合模式會當一般圖層，沒有像素的圖層會略過。透明度會直接套用到圖層。匯出 PSD 也不會帶回這些設定。</p></details>
   </section>
@@ -525,8 +528,7 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
 
 <div class="modal lbmodal" id="pvModal" hidden role="dialog" aria-modal="true" aria-label="合成預覽大圖">
   <div class="lbbar">
-    <div class="pvbgs" role="group" aria-label="預覽底色"><span>底色</span><button type="button" data-pv=""><i style="background:repeating-conic-gradient(#999 0 25%,#fff 0 50%) 0 0/6px 6px"></i>棋盤</button><button type="button" data-pv="w"><i style="background:#fff"></i>白</button><button type="button" data-pv="k"><i style="background:#141414"></i>黑</button><button type="button" data-pv="g"><i style="background:#808080"></i>灰</button><button type="button" data-pv="e"><i style="background:#2fd27a"></i>綠</button></div>
-    <span class="lbzoom"><button class="btn" id="lbFit" type="button">恢復大小</button></span>
+    <div class="pvbgs" role="group" aria-label="預覽底色"><span>底色</span><button type="button" data-pv="" title="棋盤" aria-label="棋盤"><i style="background:repeating-conic-gradient(#999 0 25%,#fff 0 50%) 0 0/6px 6px"></i></button><button type="button" data-pv="w" title="白" aria-label="白"><i style="background:#fff"></i></button><button type="button" data-pv="k" title="黑" aria-label="黑"><i style="background:#141414"></i></button><button type="button" data-pv="g" title="灰" aria-label="灰"><i style="background:#808080"></i></button><button type="button" data-pv="e" title="綠" aria-label="綠"><i style="background:#2fd27a"></i></button></div>
     <span class="lbinfo" id="lbInfo"></span>
     <button class="btn" id="lbClose" type="button">關閉</button>
   </div>
@@ -552,19 +554,25 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
   <div class="mbox cutbox">
     <div class="mhead"><span id="cutPos">去背</span>
       <span class="cutbtns"><button class="btn" id="cutCancel" type="button">取消</button><button class="btn primary" id="cutApply" type="button">套用</button><button class="btn" id="cutNext" type="button">套用並下一張</button></span></div>
+    <div class="cutacts">
+      <span class="cutbg">背景色 <span class="cutsw" id="cutSw"></span> <button class="btn" id="cutAuto" type="button">自動取樣</button> <label class="tl"><input type="radio" name="cutTool" value="pick">💧 吸取背景色</label></span>
+      <span class="cutbtns2">
+        <button class="btn" id="cutRestoreOrig" type="button" hidden>還原成原圖</button>
+        <label class="check"><input type="checkbox" id="cutAllOv"> 連筆刷一併套用</label>
+        <button class="btn" id="cutAll" type="button">套用到本版全部圖片</button>
+      </span>
+    </div>
     <div class="cutstage t-pan" id="cutStage"><canvas id="cutCv" width="1" height="1"></canvas></div>
     <div class="cutinfo"><span class="hint" id="cutMsg"></span><a id="vidLink" href="https://youtu.be/j1r6EGAP7hk" rel="noopener noreferrer">▶ 去背示範影片</a></div>
     <div class="cuttools" role="group" aria-label="工具">
       <div class="tg">
         <label class="tl"><input type="radio" name="cutTool" value="pan" checked>✋ 移動</label>
-        <label class="tl"><input type="radio" name="cutTool" value="pick">💧 吸取背景色</label>
         <label class="tl"><input type="radio" name="cutTool" value="erase">🧽 擦掉</label>
         <label class="tl"><input type="radio" name="cutTool" value="restore">🖌 補回</label>
       </div>
       <div class="tg">
         <button class="btn" id="cutUndo" type="button">復原</button><button class="btn" id="cutRedo" type="button">重做</button>
-        <button class="btn" id="cutFit" type="button">恢復大小</button>
-        <div class="pvbgs" role="group" aria-label="預覽底色"><span>底色</span><button type="button" data-pv=""><i style="background:repeating-conic-gradient(#999 0 25%,#fff 0 50%) 0 0/6px 6px"></i>棋盤</button><button type="button" data-pv="w"><i style="background:#fff"></i>白</button><button type="button" data-pv="k"><i style="background:#141414"></i>黑</button><button type="button" data-pv="g"><i style="background:#808080"></i>灰</button><button type="button" data-pv="e"><i style="background:#2fd27a"></i>綠</button></div>
+        <div class="pvbgs" role="group" aria-label="預覽底色"><span>底色</span><button type="button" data-pv="" title="棋盤" aria-label="棋盤"><i style="background:repeating-conic-gradient(#999 0 25%,#fff 0 50%) 0 0/6px 6px"></i></button><button type="button" data-pv="w" title="白" aria-label="白"><i style="background:#fff"></i></button><button type="button" data-pv="k" title="黑" aria-label="黑"><i style="background:#141414"></i></button><button type="button" data-pv="g" title="灰" aria-label="灰"><i style="background:#808080"></i></button><button type="button" data-pv="e" title="綠" aria-label="綠"><i style="background:#2fd27a"></i></button></div>
       </div>
     </div>
     <div class="cutopts cutsliders">
@@ -576,14 +584,6 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
     <div class="cutopts cutchecks">
       <label class="check"><input type="checkbox" id="cutSoft"> 半透明去色</label>
       <label class="check"><input type="checkbox" id="cutContig" checked> 只去外圍相連的背景（不動內部同色區域）</label>
-      <label class="check"><input type="checkbox" id="cutAllOv"> 套用全部時連筆刷一併套用（尺寸相同的圖才會套用）</label>
-    </div>
-    <div class="cutacts">
-      <span class="cutbg">背景色 <span class="cutsw" id="cutSw"></span> <button class="btn" id="cutAuto" type="button">自動取樣</button></span>
-      <span class="cutbtns2">
-        <button class="btn" id="cutRestoreOrig" type="button" hidden>還原成原圖</button>
-        <button class="btn" id="cutAll" type="button">套用到本版全部圖片</button>
-      </span>
     </div>
   </div>
 </div>
@@ -2505,7 +2505,6 @@ function closeBig(){lb.modal.hidden=true;lb.src=null;}
 cmp.pv.addEventListener('click',openBig);
 $('#cmpPvBig').addEventListener('click',openBig);
 $('#lbClose').addEventListener('click',closeBig);
-$('#lbFit').addEventListener('click',lbReset);
 lb.modal.addEventListener('pointerdown',e=>{if(e.target===lb.modal)closeBig();});
 const lbPt=e=>{const r=lb.box.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top};};
 lb.box.addEventListener('wheel',e=>{e.preventDefault();const p=lbPt(e);lbZoomAt(Math.exp(-e.deltaY*(e.deltaMode===1?0.05:0.0015)),p.x,p.y);},{passive:false});
@@ -2633,7 +2632,7 @@ function cutDrawNow(){
   ctx.setTransform(cut.d,0,0,cut.d,0,0);ctx.clearRect(0,0,cut.W,cut.H);
   lbBg(ctx,cut.ox,cut.oy,cut.w*s,cut.h*s);
   ctx.imageSmoothingEnabled=s<3;ctx.drawImage(cut.res,cut.ox,cut.oy,cut.w*s,cut.h*s);
-  if((cut.tool==='erase'||cut.tool==='restore')&&cut.mx>-1e3){
+  if((cut.tool==='erase'||cut.tool==='restore')&&cut.mx>-1e3&&!cut.pan){
     ctx.beginPath();ctx.arc(cut.mx,cut.my,+$('#cutBr').value/2,0,Math.PI*2);
     ctx.lineWidth=1.5;ctx.strokeStyle=cut.tool==='erase'?'#ff5c5c':'#4dd07a';ctx.stroke();
   }
@@ -2715,7 +2714,7 @@ function cutZoomAt(f,cx,cy){
   const z=Math.max(1,Math.min(40,cut.z*f));if(z===cut.z)return;
   const k=z/cut.z;cut.ox=cx-(cx-cut.ox)*k;cut.oy=cy-(cy-cut.oy)*k;cut.z=z;cutClamp();cutDraw();
 }
-$('#cutFit').addEventListener('click',()=>{cut.z=1;cutClamp();cutDraw();});
+cut.stage.addEventListener('dblclick',()=>{if(cut.tool==='pan'){cut.z=1;cutClamp();cutDraw();}});
 const cutPt=e=>{const r=cut.stage.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top};};
 const cutImg=p=>{const s=cutFitScale()*cut.z;return {x:(p.x-cut.ox)/s,y:(p.y-cut.oy)/s,s};};
 cut.stage.addEventListener('wheel',e=>{e.preventDefault();const p=cutPt(e);cutZoomAt(Math.exp(-e.deltaY*(e.deltaMode===1?0.05:0.0015)),p.x,p.y);},{passive:false});
@@ -2733,7 +2732,7 @@ function cutStrokeTo(p){
 cut.stage.addEventListener('pointerdown',e=>{
   if(!cut.src)return;const p=cutPt(e);cut.mx=p.x;cut.my=p.y;
   try{cut.stage.setPointerCapture(e.pointerId);}catch(_){}
-  if(cut.tool==='pan'){cut.pan={x:e.clientX,y:e.clientY,ox:cut.ox,oy:cut.oy};cut.stage.classList.add('drag');}
+  if(cut.tool==='pan'||e.button===1){cut.pan={x:e.clientX,y:e.clientY,ox:cut.ox,oy:cut.oy};cut.stage.classList.add('drag');}   /* middle button moves the picture with any tool */
   else if(cut.tool==='pick'){
     const m=cutImg(p),x=Math.floor(m.x),y=Math.floor(m.y);
     if(x>=0&&y>=0&&x<cut.w&&y<cut.h){const k=(y*cut.w+x)*4,d=cut.src.data;if(d[k+3]>=8){cut.bg=[d[k],d[k+1],d[k+2]];cut.bgAuto=false;cutSoon();}}
@@ -2742,6 +2741,7 @@ cut.stage.addEventListener('pointerdown',e=>{
     cutStamp(m.x,m.y,Math.max(1,+$('#cutBr').value/2/m.s),cut.tool==='erase'?1:2);cutDraw();
   }
 });
+cut.stage.addEventListener('mousedown',e=>{if(e.button===1)e.preventDefault();});   /* no browser auto-scroll icon */
 cut.stage.addEventListener('pointermove',e=>{
   const p=cutPt(e);cut.mx=p.x;cut.my=p.y;
   if(cut.pan){cut.ox=cut.pan.ox+(e.clientX-cut.pan.x);cut.oy=cut.pan.oy+(e.clientY-cut.pan.y);cutClamp();}
