@@ -269,6 +269,7 @@ textarea{width:100%;min-height:120px;background:var(--bg);border:1px solid var(-
 .modal{position:fixed;inset:0;background:rgba(10,14,22,.6);z-index:500;display:flex;align-items:center;justify-content:center;padding:12px}
 .modal[hidden]{display:none}
 .mbox{background:var(--panel);border:1px solid var(--line);border-radius:14px;width:min(560px,100%);max-height:100%;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.mleft{display:flex;align-items:center;gap:10px}
 .mhead{display:flex;justify-content:space-between;align-items:center;font-weight:600}
 .mimg{background:repeating-conic-gradient(color-mix(in srgb,var(--ink) 22%,var(--panel)) 0 25%,color-mix(in srgb,var(--ink) 7%,var(--panel)) 0 50%) 0 0/16px 16px;border-radius:10px;display:flex;align-items:center;justify-content:center;min-height:140px;max-height:52vh;overflow:hidden}
 .mimg img{max-width:100%;max-height:52vh;object-fit:contain;display:block;transform-origin:50% 50%;user-select:none;-webkit-user-drag:none}
@@ -1158,7 +1159,7 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
 </div>
 <div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="mPos">
   <div class="mbox">
-    <div class="mhead"><span id="mPos"></span><button class="btn" id="mClose" type="button">完成</button></div>
+    <div class="mhead"><span class="mleft"><span id="mPos"></span><button class="btn" id="mDl" type="button">下載</button></span><button class="btn" id="mClose" type="button">完成</button></div>
     <div class="mimg" id="mImg"></div>
     <div class="mname" id="mName"></div>
     <label class="f" for="mDesc">形容（接在檔名後面，按 Enter 跳下一張）
@@ -1730,6 +1731,7 @@ function showModal(){
   el.mName.textContent=fileName(g,mi,it);
   $('#mPrev').disabled=mi===0;
   $('#mNext').textContent=mi===g.items.length-1?'完成':'下一張';
+  $('#mDl').disabled=!it.file;
 }
 function closeModal(){el.modal.hidden=true;mi=-1;}
 function stepModal(d){
@@ -1747,6 +1749,12 @@ el.mDesc.addEventListener('input',()=>{
 el.mDesc.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.isComposing){e.preventDefault();stepModal(1);}});
 $('#mNext').addEventListener('click',()=>stepModal(1));
 $('#mPrev').addEventListener('click',()=>stepModal(-1));
+$('#mDl').addEventListener('click',async()=>{
+  const g=cur(),it=g.items[mi];
+  if(!it||!it.file){msg('這個位置還沒有圖片。',true);return;}
+  const nm=fileName(g,mi,it);
+  if(await saveBlob(nm,it.file))msg('已下載：'+nm);
+});
 $('#mClose').addEventListener('click',closeModal);
 el.modal.addEventListener('click',e=>{if(e.target===el.modal)closeModal();});
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&!el.modal.hidden)closeModal();});
@@ -2995,7 +3003,9 @@ function startFx(cv,cfg){
     var d=Math.min(window.devicePixelRatio||1,2);
     W=cv.clientWidth;H=cv.clientHeight;cv.width=Math.round(W*d);cv.height=Math.round(H*d);ctx.setTransform(d,0,0,d,0,0);
   }
-  function fill(){
+  function fill(force){
+    var kp=startFx.keep;
+    if(!force&&kp&&kp.kind===cfg.kind&&kp.ps.length){ps=kp.ps;return}
     var n=Math.max(12,Math.round(cfg.count*Math.max(.35,Math.min(1.2,W*H/1024000))));
     ps=[];for(var i=0;i<n;i++)ps.push(mk());
   }
@@ -3063,20 +3073,20 @@ function startFx(cv,cfg){
     for(var q=0;q<pops.length;q++)pops[q].t+=dt;
     paint();
   }
-  function onResize(){var w=cv.clientWidth;fit();if(w!==W||!ps.length)fill();if(still)paint()}
+  function onResize(){var w=cv.clientWidth;fit();if(w!==W||!ps.length)fill(true);if(still)paint()}
   var pops=[];
-  /* click a particle (generous hit area) and it pops; it comes back a few seconds later somewhere else */
+  /* click a particle and it pops for good (until reload); switching style/theme keeps the same particles */
   function onDown(e){
     if(still||(e.target.closest&&e.target.closest('button,input,select,textarea,a,summary,label,.modal')))return;
     for(var i=0;i<ps.length;i++){var p=ps[i];if(p.gone>0||p.fade<.5)continue;
       var dx=p.x-e.clientX,dy=p.y-e.clientY,h=Math.max(30,p.r*8);
-      if(dx*dx+dy*dy<h*h){p.gone=rnd(4,8);pops.push({x:p.x,y:p.y,r:p.r*1.6,t:0,c:p.c});}}
+      if(dx*dx+dy*dy<h*h){p.gone=1e9;pops.push({x:p.x,y:p.y,r:p.r*1.6,t:0,c:p.c});}}
   }
   if(!still)window.addEventListener('pointerdown',onDown,{passive:true});
   fit();fill();
   window.addEventListener('resize',onResize);
   if(still)paint();else raf=requestAnimationFrame(frame);
-  return function(){alive=false;cancelAnimationFrame(raf);window.removeEventListener('resize',onResize);window.removeEventListener('pointerdown',onDown);ctx.clearRect(0,0,W,H)};
+  return function(){startFx.keep={kind:cfg.kind,ps:ps};alive=false;cancelAnimationFrame(raf);window.removeEventListener('resize',onResize);window.removeEventListener('pointerdown',onDown);ctx.clearRect(0,0,W,H)};
 }
 
 /* preview backdrop + big view of the composed preview */
