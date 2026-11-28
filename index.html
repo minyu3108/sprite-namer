@@ -784,19 +784,21 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
 :root[data-style="journal"] .faq h2::before{content:"References";font-size:17px}
 :root[data-style="journal"] .faq h2::after{content:"（常見問題）";font-size:13px;font-weight:400;margin-left:6px}
 :root[data-style="journal"] .faq details{counter-increment:faq;scroll-margin:80px}
-:root[data-style="journal"] .faq summary::after{content:none}
+:root[data-style="journal"] .faq summary::after{content:" Sprite Namer, 1(" counter(faq) "), 3108.";font-weight:400;font-style:italic;color:var(--ink)}
 :root[data-style="journal"] .faq summary{list-style:none}
 :root[data-style="journal"] .faq summary::-webkit-details-marker{display:none}
-:root[data-style="journal"] .faq summary::before{content:"[" counter(faq) "] ";color:var(--ink);font-weight:400;margin-right:4px}
+:root[data-style="journal"] .faq summary::before{content:"[" counter(faq) "] " attr(data-ref);color:var(--ink);font-weight:400;margin-right:0}
 :root[data-style="journal"] .faq details{background:none;border:0;border-bottom:1px solid var(--line);border-radius:0}
+:root[data-style="journal"] .faq details:first-of-type{position:relative}
+:root[data-style="journal"] .faq details:first-of-type::after{content:"\2190  2019 太舊了，請更新";position:absolute;right:4px;top:12px;color:var(--pen);font:400 14px/1 "Segoe Print","Bradley Hand","Comic Sans MS","Kaiti TC","KaiTi",cursive;transform:rotate(-2deg);pointer-events:none}
+@media (max-width:760px){:root[data-style="journal"] .faq details:first-of-type::after{display:none}}
 :root[data-style="journal"] .mbox{border-radius:0;border:0;background:var(--bg);box-shadow:0 8px 34px rgba(0,0,0,.5)}
 :root[data-style="journal"] .foot{text-align:left;color:var(--ink);font-size:13px;border-top:1px solid var(--ink);padding-top:10px}
 :root[data-style="journal"] .foot::before{content:"Supplementary Materials";display:block;font-weight:700;font-size:16px;margin-bottom:6px}
 :root[data-style="journal"] .foot a{color:var(--accent)}
-:root[data-style="journal"] #viewNamer>.panel:first-of-type>p.hint{outline:2px solid var(--pen);outline-offset:4px}
 :root[data-style="journal"] #viewNamer>.panel:nth-of-type(2)>p.hint:first-of-type{text-decoration:underline wavy var(--pen);text-decoration-thickness:1px;text-underline-offset:5px}
 :root[data-style="journal"] #viewNamer>.panel:nth-of-type(2)>p.hint:first-of-type::before{content:"??";position:absolute;left:-58px;top:-4px;text-indent:0;color:var(--pen);font:700 20px/1 "Segoe Print","Bradley Hand","Comic Sans MS","Kaiti TC","KaiTi",cursive;transform:rotate(-10deg)}
-:root[data-style="journal"] #viewNamer>.panel:nth-of-type(3)::after{content:"\270E  Reviewer #2\A 作者應與更多 baseline 比較，並補充消融實驗（ablation study）。此外，第 3 節的格式設定不夠直覺。";white-space:pre-line;position:absolute;left:-176px;top:0;width:150px;background:var(--note);color:var(--note-ink);font:11.5px/1.5 system-ui,"Noto Sans TC",sans-serif;padding:8px 10px 10px;box-shadow:2px 3px 8px rgba(0,0,0,.25);transform:rotate(-1.5deg);pointer-events:none;z-index:3}
+:root[data-style="journal"] #viewNamer>.panel:nth-of-type(3)::after{content:"\270E  Reviewer #2\A 作者應與更多 baseline 比較，並補充消融實驗（ablation study）。此外，第 3 節的格式設定不夠直覺。";white-space:pre-line;position:absolute;left:-176px;top:0;width:128px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-left:4px solid #8a5fc4;font:12px/1.5 system-ui,"Noto Sans TC",sans-serif;padding:8px 10px 10px;box-shadow:0 1px 4px rgba(0,0,0,.18);transform:none;pointer-events:none;z-index:3}
 :root[data-style="journal"] #viewNamer>.panel:nth-of-type(4) h2::after{content:"  \2190  明天 meeting 前要做完";font:400 14px/1 "Segoe Print","Bradley Hand","Comic Sans MS","Kaiti TC","KaiTi",cursive;color:var(--pen);margin-left:10px}
 :root[data-style="journal"] body::after{content:"立繪差分命名器_final_v3_真的final_改.pdf                    3 / 40     |     \2212    100%    +";white-space:pre;position:fixed;left:0;right:0;bottom:0;height:36px;line-height:36px;padding:0 16px;background:#323639;color:#f1f1f1;font:13px/36px system-ui,"Noto Sans TC",sans-serif;z-index:40;pointer-events:none;overflow:hidden;text-overflow:ellipsis}
 :root[data-style="journal"] .stylemenu{border-radius:2px;font-family:system-ui,"Noto Sans TC",sans-serif}
@@ -918,6 +920,7 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
   :root[data-style="journal"] .cside #quickRow{grid-column:1;grid-row:6}
   :root[data-style="journal"] .compmain>section{grid-column:2/4}
 }
+
 </style>
 </head>
 <body>
@@ -3539,7 +3542,9 @@ $('#themeBtn').addEventListener('click',()=>{
 if(darkMq&&darkMq.addEventListener)darkMq.addEventListener('change',()=>syncTheme());
 syncTheme();
 
-/* journal style: in-text citations [n] point to the n-th FAQ entry */
+/* journal style: in-text citations [n] point to the n-th reference (= FAQ entry); references carry a long citation */
+const APA=[['Advisor, P.',2019],['Classmate, B.',2025],['Postdoc, M.',2023],['Senior, S.',2024],['Student, G.',2026]];
+document.querySelectorAll('.faq details>summary').forEach((sm,i)=>{if(APA[i])sm.dataset.ref=APA[i][0]+' ('+APA[i][1]+'). ';});
 document.querySelectorAll('[data-cite]').forEach(p=>{
   const w=document.createElement('span');w.className='cite';w.append(' [');
   p.dataset.cite.split(',').forEach((n,i)=>{
