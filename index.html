@@ -898,6 +898,24 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
   :root[data-style="journal"] .slist .sitem .ssub{grid-column:2/-1;grid-row:2}
   :root[data-style="journal"] .sthead>span:nth-child(4){display:none}
 }
+
+/* journal wide: align Table I and Table II on one grid row so they have the same top and bottom */
+@media (min-width:1200px){
+  :root[data-style="journal"] .compgrid{grid-template-columns:300px minmax(0,1fr) 300px;column-gap:28px;row-gap:12px;align-items:start}
+  :root[data-style="journal"] .compgrid .compmain,:root[data-style="journal"] .compgrid .cdetail,:root[data-style="journal"] .compgrid .cgroups,:root[data-style="journal"] .compgrid .cgroup.cur,:root[data-style="journal"] .compgrid .cside{display:contents}
+  :root[data-style="journal"] .compmain>p.hint{grid-column:1/4;grid-row:1}
+  :root[data-style="journal"] .cgroup.cur>.cgtop{grid-column:1/3;grid-row:2}
+  :root[data-style="journal"] .comppv{grid-column:3;grid-row:2/span 4;position:static;align-self:start}
+  :root[data-style="journal"] .cgroup.cur>.cgsum{grid-column:1/3;grid-row:3}
+  :root[data-style="journal"] .cside .slist{grid-column:1;grid-row:4;align-self:stretch;align-content:start;margin:0;border-bottom:1px solid var(--ink)}
+  :root[data-style="journal"] #cmpGroups .clayers{grid-column:2;grid-row:4;align-self:stretch;align-content:start;margin:0;border-bottom:1px solid var(--ink)}
+  :root[data-style="journal"] .slist .sitem:not(.sthead):last-child,:root[data-style="journal"] #cmpGroups .clrow:last-child,:root[data-style="journal"] #cmpGroups .clnone:last-child{border-bottom:0}
+  :root[data-style="journal"] .cside .shead{grid-column:1;grid-row:5}
+  :root[data-style="journal"] .cgroup.cur>.cgadd{grid-column:2;grid-row:5}
+  :root[data-style="journal"] .cgroup.cur>.cgadv{grid-column:2;grid-row:6}
+  :root[data-style="journal"] .cside #quickRow{grid-column:1;grid-row:6}
+  :root[data-style="journal"] .compmain>section{grid-column:2/4}
+}
 </style>
 </head>
 <body>
