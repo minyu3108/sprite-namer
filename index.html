@@ -733,9 +733,10 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
 :root[data-style="journal"] .seg{display:block;border:0;background:none;box-shadow:none;border-radius:0;margin-top:10px;font-size:15px;overflow:visible}
 :root[data-style="journal"] .seg::before{content:"Keywords: ";font-weight:700}
 :root[data-style="journal"] .segb{display:inline;background:none;border:0;border-radius:0;padding:0;min-height:0;color:var(--ink);font:inherit;cursor:pointer;box-shadow:none}
-:root[data-style="journal"] .segb+.segb::before{content:"; "}
+:root[data-style="journal"] .segb+.segb{position:relative;margin-left:12px}
+:root[data-style="journal"] .segb+.segb::before{content:";";position:absolute;left:-9px;top:50%;transform:translateY(-50%);font-weight:400;color:var(--ink)}
 :root[data-style="journal"] .segb:hover{background:none;text-decoration:underline}
-:root[data-style="journal"] .segb.on{background:linear-gradient(transparent 48%,var(--hl) 48%);color:var(--ink);font-weight:400}
+:root[data-style="journal"] .segb.on{background:none;outline:2px solid var(--ink);outline-offset:-2px;color:var(--ink);font-weight:700}
 :root[data-style="journal"] .toolbtns{top:34px;right:20px}
 :root[data-style="journal"] .themebtn{background:none;border:0;box-shadow:none;color:var(--muted)}
 :root[data-style="journal"] .themebtn:hover{background:color-mix(in srgb,var(--ink) 8%,transparent);border:0}
@@ -743,7 +744,7 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
 :root[data-style="journal"] .vlabel{font-weight:700}
 :root[data-style="journal"] .tab{background:none;border:0;border-radius:0;padding:3px 6px;color:var(--accent);box-shadow:none}
 :root[data-style="journal"] .tab:not(.on):hover{background:none;text-decoration:underline}
-:root[data-style="journal"] .tab.on{background:linear-gradient(transparent 48%,var(--hl) 48%);color:var(--ink);font-weight:700;border:0}
+:root[data-style="journal"] .tab.on{background:none;outline:2px solid var(--ink);outline-offset:-2px;color:var(--ink);font-weight:700;border:0}
 :root[data-style="journal"] .panel{position:relative;background:none;border:0;border-radius:0;box-shadow:none;padding:0;gap:10px}
 :root[data-style="journal"] h2{font-size:17px;font-weight:700;color:var(--ink);border:0}
 :root[data-style="journal"] .step{background:none;border:0;color:var(--ink);width:auto;height:auto;font:inherit;margin-right:6px;border-radius:0}
@@ -754,12 +755,12 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
 :root[data-style="journal"] .btn:hover{background:none;border:0;text-decoration:underline}
 :root[data-style="journal"] .btn[disabled]{color:var(--muted)}
 :root[data-style="journal"] .btn.primary{border:1px solid var(--ink);color:var(--ink);padding:4px 12px;font-weight:700;background:none}
-:root[data-style="journal"] .btn.primary:hover{background:var(--hl);border:1px solid var(--ink);text-decoration:none}
+:root[data-style="journal"] .btn.primary:hover{background:none;border:1px solid var(--ink);outline:2px solid var(--ink);outline-offset:-3px;text-decoration:none}
 :root[data-style="journal"] .btn.warn{color:var(--pen)}
 :root[data-style="journal"] label.f{color:var(--ink);font-style:italic}
 :root[data-style="journal"] input[type=text],:root[data-style="journal"] input[type=number],:root[data-style="journal"] select{background:transparent;border:0;border-bottom:1px solid var(--ink);border-radius:0;box-shadow:none;padding:3px 2px;min-height:0;color:var(--ink)}
 :root[data-style="journal"] textarea{background:transparent;border:1px solid var(--line);border-radius:0}
-:root[data-style="journal"] input[type=text]:focus,:root[data-style="journal"] input[type=number]:focus,:root[data-style="journal"] select:focus,:root[data-style="journal"] textarea:focus{outline:none;box-shadow:none;background:color-mix(in srgb,var(--hl) 45%,transparent)}
+:root[data-style="journal"] input[type=text]:focus,:root[data-style="journal"] input[type=number]:focus,:root[data-style="journal"] select:focus,:root[data-style="journal"] textarea:focus{outline:2px solid var(--ink);outline-offset:-1px;box-shadow:none;background:none}
 :root[data-style="journal"] select option{background:var(--bg);color:var(--ink)}
 :root[data-style="journal"] input[type=checkbox],:root[data-style="journal"] input[type=radio],:root[data-style="journal"] input[type=range]{accent-color:var(--ink)}
 :root[data-style="journal"] .card{border:0;border-radius:0;box-shadow:none;background:none;counter-increment:fig}
@@ -767,14 +768,14 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
 :root[data-style="journal"] .cname{text-align:center;font-family:inherit;font-size:12.5px}
 :root[data-style="journal"] .cname::before{content:"Figure " counter(fig) ". ";font-weight:700}
 :root[data-style="journal"] .notice{background:none;border:0;border-top:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink);border-radius:0;padding:8px 4px;font-size:14px;counter-increment:tbl}
-:root[data-style="journal"] .notice:not(:empty)::before{content:"Table " counter(tbl) ". ";font-weight:700}
+:root[data-style="journal"] .notice:not(:empty)::before{content:"TABLE " counter(tbl,upper-roman) ". ";font-weight:700}
 :root[data-style="journal"] .tokens,:root[data-style="journal"] .howto{background:none;border:1px solid var(--ink);border-radius:0}
 :root[data-style="journal"] .preview,:root[data-style="journal"] .mname{background:none;border:0;border-top:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink);border-radius:0}
 :root[data-style="journal"] .chip{border-radius:0}
 :root[data-style="journal"] .cside,:root[data-style="journal"] .cdetail{background:none;border:0;border-radius:0;box-shadow:none}
 :root[data-style="journal"] .cside{border-right:1px solid var(--line)}
 :root[data-style="journal"] .sitem{border-radius:0;border:0}
-:root[data-style="journal"] .sitem.on{background:linear-gradient(transparent 55%,var(--hl) 55%);border:0}
+:root[data-style="journal"] .sitem.on{background:none;border:0;outline:2px solid var(--ink);outline-offset:-2px}
 :root[data-style="journal"] .clrow,:root[data-style="journal"] .clnone,:root[data-style="journal"] .cmbrow{background:none;border:0;border-bottom:1px solid var(--line);border-radius:0}
 :root[data-style="journal"] .faq{counter-reset:faq}
 :root[data-style="journal"] .faq h2{font-size:0}
@@ -790,7 +791,7 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
 :root[data-style="journal"] .foot{text-align:left;color:var(--ink);font-size:13px;border-top:1px solid var(--ink);padding-top:10px}
 :root[data-style="journal"] .foot::before{content:"Supplementary Materials";display:block;font-weight:700;font-size:16px;margin-bottom:6px}
 :root[data-style="journal"] .foot a{color:var(--accent)}
-:root[data-style="journal"] #viewNamer>.panel:first-of-type>p.hint::first-line{background:var(--hl)}
+:root[data-style="journal"] #viewNamer>.panel:first-of-type>p.hint{outline:2px solid var(--pen);outline-offset:4px}
 :root[data-style="journal"] #viewNamer>.panel:nth-of-type(2)>p.hint:first-of-type{text-decoration:underline wavy var(--pen);text-decoration-thickness:1px;text-underline-offset:5px}
 :root[data-style="journal"] #viewNamer>.panel:nth-of-type(2)>p.hint:first-of-type::before{content:"??";position:absolute;left:-58px;top:-4px;text-indent:0;color:var(--pen);font:700 20px/1 "Segoe Print","Bradley Hand","Comic Sans MS","Kaiti TC","KaiTi",cursive;transform:rotate(-10deg)}
 :root[data-style="journal"] #viewNamer>.panel:nth-of-type(3)::after{content:"\270E  Reviewer #2\A 作者應與更多 baseline 比較，並補充消融實驗（ablation study）。此外，第 3 節的格式設定不夠直覺。";white-space:pre-line;position:absolute;left:-176px;top:0;width:150px;background:var(--note);color:var(--note-ink);font:11.5px/1.5 system-ui,"Noto Sans TC",sans-serif;padding:8px 10px 10px;box-shadow:2px 3px 8px rgba(0,0,0,.25);transform:rotate(-1.5deg);pointer-events:none;z-index:3}
@@ -813,13 +814,13 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
 :root[data-style="journal"] .cite a{color:inherit;text-decoration:none}
 :root[data-style="journal"] .cite a:hover{text-decoration:underline}
 :root[data-style="journal"] .faq details.citehit{animation:citeHit 1.8s ease-out}
-@keyframes citeHit{0%,40%{background:var(--hl)}100%{background:transparent}}
+@keyframes citeHit{0%,40%{outline:3px solid var(--ink);outline-offset:2px}100%{outline:3px solid transparent;outline-offset:2px}}
 /* journal: the filename format reads as an equation */
 :root[data-style="journal"] .tokens{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px 0;position:relative;border:0;background:none;padding:16px 56px 16px 8px;min-height:64px;font:italic 19px/1.4 "Cambria Math","STIX Two Math","Latin Modern Math","Times New Roman","Noto Serif TC",serif}
 :root[data-style="journal"] .tokens::before{content:"檔名\2009=\2009";font-style:normal;margin-right:8px;white-space:pre}
 :root[data-style="journal"] .tokens::after{content:"(1)";position:absolute;right:6px;top:50%;transform:translateY(-50%);font:15px "Palatino Linotype","Book Antiqua",Palatino,serif;font-style:normal}
 :root[data-style="journal"] .tokens .chip{background:none;border:0;border-radius:0;box-shadow:none;padding:0 2px;gap:0;color:var(--ink);font:inherit}
-:root[data-style="journal"] .tokens .chip:hover{background:color-mix(in srgb,var(--hl) 60%,transparent)}
+:root[data-style="journal"] .tokens .chip:hover{outline:2px solid var(--ink);outline-offset:-2px}
 :root[data-style="journal"] .tokens .chip+.chip::before{content:"+";font-style:normal;margin:0 10px 0 6px;color:var(--ink)}
 :root[data-style="journal"] .tokens .chip:is(.t-sp,.t-us,.t-dash,.t-text)>span{font:15px "Courier New",Consolas,monospace;font-style:normal}
 :root[data-style="journal"] .tokens .chip:is(.t-sp,.t-us,.t-dash)>span::before,:root[data-style="journal"] .tokens .chip:is(.t-sp,.t-us,.t-dash)>span::after{content:"\201C"}
@@ -837,11 +838,11 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
 :root[data-style="journal"] #cmpGroups .clrow,:root[data-style="journal"] #cmpGroups .clnone,:root[data-style="journal"] #cmpGroups .clhead,:root[data-style="journal"] #cmbList .cmbrow,:root[data-style="journal"] #cmbList .cmbhead{display:grid;align-items:center;gap:8px;padding:6px 10px;margin:0;border:0;border-radius:0;background:transparent;box-shadow:none}
 :root[data-style="journal"] #cmpGroups .clrow,:root[data-style="journal"] #cmpGroups .clnone,:root[data-style="journal"] #cmpGroups .clhead{grid-template-columns:20px 22px 56px minmax(0,1fr) 22px 40px 30px}
 :root[data-style="journal"] #cmpGroups .clrow:hover,:root[data-style="journal"] #cmbList .cmbrow:hover{background:none}
-:root[data-style="journal"] #cmpGroups .clrow:last-child,:root[data-style="journal"] #cmpGroups .clnone:last-child,:root[data-style="journal"] #cmbList .cmbrow:last-child{border-bottom:1.5px solid var(--ink)}
+:root[data-style="journal"] #cmpGroups .clrow:last-child,:root[data-style="journal"] #cmpGroups .clnone:last-child,:root[data-style="journal"] #cmbList .cmbrow:last-child{border-bottom:1px solid var(--ink)}
 .tcap{display:none}
-:root[data-style="journal"] .tcap{display:block;counter-increment:tbl;font-size:13px;line-height:1.5;padding:0 0 6px;color:var(--ink)}
-:root[data-style="journal"] .tcap::before{content:"Table " counter(tbl) ". ";font-weight:700}
-:root[data-style="journal"] #cmpGroups .clhead,:root[data-style="journal"] #cmbList .cmbhead{padding-top:4px;padding-bottom:4px;font-size:13px;font-weight:700;color:var(--ink);background:none;border-top:1.5px solid var(--ink);border-bottom:.75px solid var(--ink);line-height:1.5}
+:root[data-style="journal"] .tcap{display:block;counter-increment:tbl;font-size:12px;line-height:1.5;padding:0 0 8px;color:var(--ink);text-align:center;font-variant:small-caps;letter-spacing:.02em}
+:root[data-style="journal"] .tcap::before{content:"Table " counter(tbl,upper-roman);display:block;font-weight:400}
+:root[data-style="journal"] #cmpGroups .clhead,:root[data-style="journal"] #cmbList .cmbhead{padding-top:3px;padding-bottom:3px;font-size:12.5px;font-weight:400;color:var(--ink);background:none;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);line-height:1.5}
 :root[data-style="journal"] #cmpGroups .clhead>span:nth-child(n+5),:root[data-style="journal"] #cmbList .cmbhead>span:last-child{text-align:center}
 :root[data-style="journal"] #cmpGroups .clrow>.grip{grid-column:1;padding:6px 0;text-align:center}
 :root[data-style="journal"] #cmpGroups .clrow>.clsel{grid-column:2;justify-self:center;margin:0}
@@ -863,6 +864,39 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
   :root[data-style="journal"] #cmbList .cmbhead{display:none}
   :root[data-style="journal"] #cmbList .cmbrow{grid-template-columns:18px 48px minmax(0,1fr) 30px;grid-template-areas:"g t n x" ". a a a";gap:6px 8px}
   :root[data-style="journal"] #cmbList .cmbrow>.grip{grid-area:g}:root[data-style="journal"] #cmbList .cmbrow>.cmbth{grid-area:t;width:48px;height:72px}:root[data-style="journal"] #cmbList .cmbrow>.cmbname{grid-area:n}:root[data-style="journal"] #cmbList .cmbrow>.cmbdel{grid-area:x}:root[data-style="journal"] #cmbList .cmbrow>.cmbact{grid-area:a;width:auto}
+}
+
+/* journal: group list as a full-width table above the layer table */
+:root[data-style="journal"] .compgrid{grid-template-columns:minmax(0,1fr);gap:28px}
+:root[data-style="journal"] .cside{position:static;max-height:none;overflow:visible;border:0;padding:0;display:flex;flex-direction:column;gap:12px}
+:root[data-style="journal"] .cside .slist{order:1;display:grid;grid-template-columns:minmax(0,1fr);gap:0}
+:root[data-style="journal"] .cside .shead{order:2}
+:root[data-style="journal"] .cside #quickRow{order:3;grid-template-columns:repeat(auto-fill,minmax(110px,1fr))}
+:root[data-style="journal"] .cside .shead .btn{width:auto!important}
+.sthead{display:none}
+:root[data-style="journal"] .sthead,:root[data-style="journal"] .slist .sitem{display:grid;grid-template-columns:20px minmax(90px,1.2fr) 64px minmax(0,3fr);align-items:center;gap:8px;padding:3px 8px;margin:0;border:0;border-radius:0;background:none;font-size:12.5px}
+:root[data-style="journal"] .sthead{border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);line-height:1.5;color:var(--ink);cursor:default}
+:root[data-style="journal"] .slist .sitem:not(.sthead):last-child{border-bottom:1px solid var(--ink)}
+:root[data-style="journal"] .slist .sitem .sbody{display:contents}
+:root[data-style="journal"] .slist .sitem>.grip,:root[data-style="journal"] .slist .sitem .sname,:root[data-style="journal"] .slist .sitem .sbadge,:root[data-style="journal"] .slist .sitem .ssub{grid-row:1}
+:root[data-style="journal"] .slist .sitem .grip{grid-column:1;text-align:center;padding:4px 0}
+:root[data-style="journal"] .slist .sitem .sname{grid-column:2;font-weight:400;font-size:13px}
+:root[data-style="journal"] .slist .sitem .sbadge{grid-column:3;justify-self:start;border:0;border-radius:0;padding:0;font-size:12.5px;color:var(--ink)}
+:root[data-style="journal"] .slist .sitem .ssub{grid-column:4;font-size:12.5px;color:var(--ink);white-space:normal}
+:root[data-style="journal"] .slist .sitem.on{outline:2px solid var(--ink);outline-offset:-2px}
+:root[data-style="journal"] .slist .sitem:hover{background:none}
+@media (max-width:560px){
+  :root[data-style="journal"] .sthead,:root[data-style="journal"] .slist .sitem{grid-template-columns:16px minmax(0,1fr) 44px;gap:2px 6px}
+  :root[data-style="journal"] .slist .sitem .ssub{grid-column:2/-1;grid-row:2}
+  :root[data-style="journal"] .sthead>span:nth-child(4){display:none}
+}
+
+/* journal: wide screens put the group table (Table I) beside the layer table (Table II) */
+@media (min-width:1200px){
+  :root[data-style="journal"] .compgrid{grid-template-columns:300px minmax(0,1fr);gap:28px}
+  :root[data-style="journal"] .sthead,:root[data-style="journal"] .slist .sitem{grid-template-columns:16px minmax(0,1fr) 44px;gap:2px 6px}
+  :root[data-style="journal"] .slist .sitem .ssub{grid-column:2/-1;grid-row:2}
+  :root[data-style="journal"] .sthead>span:nth-child(4){display:none}
 }
 </style>
 </head>
@@ -2236,6 +2270,8 @@ const ROLE_SHORT={fixed:'固定',version:'版本',item:'差分'};
 function updateSide(){
   const box=cmp.sideList;box.innerHTML='';
   if(!comp.groups.length){const p=document.createElement('div');p.className='sempty';p.textContent='（還沒有圖層組）';box.appendChild(p);return;}
+  {const tc=document.createElement('div');tc.className='tcap';tc.textContent='圖層組一覽，每一列是一組圖層，點一列切換。';box.appendChild(tc);
+   const h=document.createElement('div');h.className='sthead';h.setAttribute('aria-hidden','true');h.innerHTML='<span></span><span>圖層組</span><span>用法</span><span>目前選用</span>';box.appendChild(h);}
   for(const g of comp.groups){
     const it=document.createElement('div');it.className='sitem'+(g.id===comp.cur?' on':'');it.dataset.id=g.id;
     const names=curSel(g).map(id=>{const f=findLayer(id);return f?f.l.name.trim():'';}).filter(Boolean);
