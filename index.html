@@ -415,7 +415,7 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
 /* toolbar: icon buttons + style menu */
 .themebtn.ib{width:36px;padding:0;display:inline-flex;align-items:center;justify-content:center}
 .stylewrap{position:relative}
-.stylemenu{position:absolute;right:0;top:calc(100% + 6px);z-index:80;min-width:190px;background:var(--panel);border:1px solid var(--edge,var(--line));border-radius:12px;padding:6px;display:flex;flex-direction:column;gap:2px;box-shadow:0 12px 32px rgba(0,0,0,.25)}
+.stylemenu{position:absolute;right:0;top:calc(100% + 6px);z-index:80;min-width:190px;max-width:calc(100vw - 16px);background:var(--panel);border:1px solid var(--edge,var(--line));border-radius:12px;padding:6px;display:flex;flex-direction:column;gap:2px;box-shadow:0 12px 32px rgba(0,0,0,.25)}
 .stylemenu .smi{display:flex;align-items:center;gap:10px;border:0;background:transparent;color:var(--ink);padding:8px 10px;border-radius:8px;cursor:pointer;text-align:left;font-size:14px}
 .stylemenu .smi:hover{background:color-mix(in srgb,var(--ink) 8%,transparent)}
 .stylemenu .smi i{width:14px;height:14px;border-radius:50%;border:1px solid color-mix(in srgb,var(--ink) 35%,transparent);flex:none}
@@ -471,7 +471,7 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
 :root[data-style="archive"] #styleBtn::after{content:"Hi, 繪師!"}
 :root[data-style="archive"] #styleBtn[aria-expanded="true"]{background:#dddddd;color:#111;border-radius:.25em .25em 0 0}
 :root[data-style="archive"] #themeBtn::after{content:attr(data-label)}
-:root[data-style="archive"] .stylemenu{top:100%;right:0;min-width:20em;border:0;border-radius:0;padding:.25em 0;gap:0;background:linear-gradient(var(--m1),var(--m2));box-shadow:-1px 1px 3px -1px #444}
+:root[data-style="archive"] .stylemenu{top:100%;right:0;min-width:min(20em,calc(100vw - 16px));border:0;border-radius:0;padding:.25em 0;gap:0;background:linear-gradient(var(--m1),var(--m2));box-shadow:-1px 1px 3px -1px #444}
 :root[data-style="archive"] .stylemenu .smi{margin:0 .25em;border-radius:0;color:var(--mink);padding:.75em .5em .5em;border-bottom:1px solid var(--msep);font-size:14px}
 :root[data-style="archive"] .stylemenu .smi:last-child{border-bottom:0}
 :root[data-style="archive"] .stylemenu .smi:hover{background:rgba(255,255,255,.25)}
@@ -921,6 +921,26 @@ body[data-pv="e"] :is(.cstrip canvas,.cwrap,.cpv,.clth,.cmbth,.thumb,.mimg,.lbim
   :root[data-style="journal"] .compmain>section{grid-column:2/4}
 }
 
+
+/* journal: narrow screens keep the compose page padding and the theme buttons inside the page */
+@media (max-width:1000px){
+  :root[data-style="journal"] .wrap:has(#viewComp:not([hidden])){padding:32px 32px 56px}
+  :root[data-style="journal"] .wrap:has(#viewComp:not([hidden])) .vbar{margin:0 -32px;padding:6px 32px}
+  :root[data-style="journal"] .toolbtns{right:24px}
+}
+@media (max-width:600px){
+  :root[data-style="journal"] .wrap:has(#viewComp:not([hidden])){padding:24px 16px 56px}
+  :root[data-style="journal"] .wrap:has(#viewComp:not([hidden])) .vbar{margin:0 -16px;padding:6px 16px}
+  :root[data-style="journal"] .toolbtns{right:8px}
+}
+
+/* journal: the empty-plan message becomes a reviewer complaint */
+:root[data-style="journal"] .notice[data-empty]{font-size:0}
+:root[data-style="journal"] .notice[data-empty]::before{font-size:14px}
+:root[data-style="journal"] .notice[data-empty]::after{content:"樣本數太少";font-size:14px;font-weight:400}
+
+/* journal: the header rule stops before the theme buttons instead of running through them */
+:root[data-style="journal"] .wrap::before{margin-right:100px}
 </style>
 </head>
 <body>
@@ -2797,7 +2817,7 @@ function renderPlan(){
     if(d)comp.groups.forEach(g=>g.layers.forEach(l=>{if(l.w!==d.w||l.h!==d.h)off++;}));
     if(off)txt+=' 注意：有 '+off+' 個圖層尺寸和第一張不同。';
   }
-  el.textContent=txt;el.className='notice'+(bad?' warn':'');
+  el.textContent=txt;el.className='notice'+(bad?' warn':'');el.toggleAttribute('data-empty',!p.error&&!any);
   cmp.run.disabled=bad||cmpBusy;
 }
 {const sel=$('#cmpSep');sel.value=LSEP;if(sel.value!==LSEP)sel.value='';
@@ -3510,7 +3530,8 @@ function buildMenu(){
    +('<div class="sep"></div>'+EGGS.map(([k,n,c])=>'<button class="smi" type="button" role="menuitemradio" data-s="'+k+'" aria-checked="'+(k===look)+'"><i style="background:'+c+'"></i>'+n+'<span class="ck">✓</span></button>').join(''))
    +(FXSTYLES.includes(look)?'<div class="sep"></div><button class="smi" type="button" role="menuitemcheckbox" id="fxItem" aria-checked="'+fxOn+'">背景動畫<span class="ck">✓</span></button>':'');
 }
-function setMenu(open){$('#styleMenu').hidden=!open;$('#styleBtn').setAttribute('aria-expanded',open);if(open)buildMenu();}
+function clampMenu(){const m=$('#styleMenu');m.style.right='';const r=m.getBoundingClientRect(),W=document.documentElement.clientWidth;let d=0;if(r.left<8)d=8-r.left;else if(r.right>W-8)d=(W-8)-r.right;if(d)m.style.right=(-d)+'px';}
+function setMenu(open){$('#styleMenu').hidden=!open;$('#styleBtn').setAttribute('aria-expanded',open);if(open){buildMenu();clampMenu();}}
 function syncTheme(force){
   const m=curTheme();
   $('#themeBtn').innerHTML=m==='dark'?SVGI.sun:SVGI.moon;
